@@ -1,0 +1,84 @@
+import { playNote, playScaleSequence } from '../lib/audioEngine';
+
+export default function SolfejoInfo({
+  selectedKey,
+  currentDegree,
+  chordName,
+  quality,
+  modeName,
+  solfejoNotes = [],
+  activeSolfejoStep = null,
+  clickedSolfejoStep = null,
+  onStepActive = () => {},
+  onNoteClick = () => {},
+  isPlaying = false,
+  setIsPlaying = () => {},
+}) {
+  const rootNote = solfejoNotes[0]?.note || '';
+
+  const handlePlayScale = () => {
+    if (isPlaying) return;
+    setIsPlaying(true);
+    playScaleSequence(
+      solfejoNotes,
+      (stepIndex) => onStepActive(stepIndex),
+      () => {
+        setIsPlaying(false);
+      },
+      280
+    );
+  };
+
+  return (
+    <div className="chord-info glass-panel solfejo-info">
+      <div className="chord-header">
+        <div className="chord-name-block">
+          <h2 className="chord-name">Escala em {rootNote}</h2>
+          <span className="roman-numeral">{quality?.roman}</span>
+          <button
+            className={`play-chord-btn ${isPlaying ? 'playing' : ''}`}
+            onClick={handlePlayScale}
+            title="Tocar solfejo da escala"
+            disabled={isPlaying}
+          >
+            {isPlaying ? '▶ Tocando...' : '🔊 Tocar Solfejo'}
+          </button>
+        </div>
+        <div className="chord-meta">
+          <span className="degree-badge">Grau {currentDegree} ({chordName})</span>
+          <span className="degree-name">{modeName}</span>
+          <span className="key-context">em {selectedKey} maior</span>
+        </div>
+        <p className="quality-name">
+          2 oitavas iniciando na nota <strong>{rootNote}</strong> (Grau {quality?.roman} do campo harm&ocirc;nico de {selectedKey}).
+          Clique nas notas no bra&ccedil;o ou no bot&atilde;o de som para ouvir.
+        </p>
+      </div>
+
+      <div className="chord-voices">
+        <h3>Sequ&ecirc;ncia do Solfejo (15 notas &bull; 2 Oitavas)</h3>
+        <div className="solfejo-steps-grid">
+          {solfejoNotes.map((s) => {
+            const isLit = s.stepIndex === activeSolfejoStep || s.stepIndex === clickedSolfejoStep;
+            const toneClass = s.chordTone > 0 ? `tone-${s.chordTone}` : 'tone-default';
+            return (
+              <button
+                key={s.stepIndex}
+                className={`solfejo-step-chip ${toneClass} ${isLit ? 'active' : ''}`}
+                onClick={() => {
+                  playNote(s.string, s.fret);
+                  onNoteClick(s.stepIndex);
+                }}
+                title={`Passo ${s.stepIndex + 1}: ${s.note} (Corda ${s.string}, Traste ${s.fret})`}
+              >
+                <span className="step-num">{s.stepIndex + 1}</span>
+                <span className="step-note">{s.note}</span>
+                <span className="step-string">C{s.string}:T{s.fret}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
