@@ -114,6 +114,84 @@ const DEGREE_NAMES_PT = {
   7: 'Sens\u00EDvel',
 };
 
+// ------------------------------------------------------------
+// Variações de voicing da mesma tétrade
+// ------------------------------------------------------------
+// Duas dimensões que o violonista de fato usa: em qual corda cai o baixo (a
+// região do braço) e qual grau está no baixo (a inversão).
+//
+// A tabela é enumerada, não calculada, e isso é deliberado. Uma fórmula que
+// combinasse os dois eixos livremente produziria formas indigitáveis — drop-2 com
+// a terça no baixo em cordas adjacentes põe 7 e 1 vizinhos, e como 7->1 é um
+// semitom enquanto subir uma corda soma 5, o traste cai 4 obrigatoriamente. Aqui
+// a lista É o conjunto verificado: não existe combinação inválida a alcançar.
+//
+// Cada entrada saiu de força bruta sobre 5 conjuntos de cordas x 24 ordens de voz
+// x 4032 combinações de campo/tônica/grau, exigindo: tocável, alturas ascendentes
+// do baixo ao agudo, e salto de traste para trás nunca abaixo de -2 entre cordas
+// fisicamente vizinhas e ambas tocadas (corda pulada não conta — o vão é o que
+// caracteriza drop-3 e não atrapalha a mão).
+const VOICING_VARIATIONS = {
+  6: {
+    1: { strings: [6, 4, 3, 2], order: [1, 7, 3, 5], family: 'drop-3' },
+    3: { strings: [6, 4, 3, 2], order: [3, 1, 5, 7], family: 'drop-3' },
+    5: { strings: [6, 5, 4, 3], order: [5, 1, 3, 7], family: 'drop-2' },
+    7: { strings: [6, 4, 3, 2], order: [7, 5, 1, 3], family: 'drop-3' },
+  },
+  5: {
+    1: { strings: [5, 4, 3, 2], order: [1, 5, 7, 3], family: 'drop-2' },
+    3: { strings: [5, 3, 2, 1], order: [3, 1, 5, 7], family: 'drop-3' },
+    5: { strings: [5, 4, 3, 2], order: [5, 1, 3, 7], family: 'drop-2' },
+    7: { strings: [5, 3, 2, 1], order: [7, 5, 1, 3], family: 'drop-3' },
+  },
+  4: {
+    1: { strings: [4, 3, 2, 1], order: [1, 5, 7, 3], family: 'drop-2' },
+    // Terça no baixo com o voicing todo nas quatro cordas agudas não tem forma
+    // digitável: a melhor disponível salta -3. Ausente de propósito.
+    5: { strings: [4, 3, 2, 1], order: [5, 1, 3, 7], family: 'drop-2' },
+    7: { strings: [4, 3, 2, 1], order: [7, 3, 5, 1], family: 'drop-2' },
+  },
+};
+
+export function getBassStringOptions() {
+  return [
+    { value: 6, label: '6ª' },
+    { value: 5, label: '5ª' },
+    { value: 4, label: '4ª' },
+  ];
+}
+
+export function getBassToneOptions() {
+  return [
+    { value: 1, label: 'Tônica', hint: 'fundamental' },
+    { value: 3, label: 'Terça', hint: '1ª inversão' },
+    { value: 5, label: 'Quinta', hint: '2ª inversão' },
+    { value: 7, label: 'Sétima', hint: '3ª inversão' },
+  ];
+}
+
+/** Existe variação para esta combinação? Nem toda existe, e isso é honesto. */
+export function hasVoicingVariation(bassString, bassTone) {
+  return Boolean(VOICING_VARIATIONS[bassString]?.[bassTone]);
+}
+
+/** A família (drop-2 / drop-3) da variação ativa, para exibir ao estudante. */
+export function getVoicingFamily(bassString, bassTone) {
+  return VOICING_VARIATIONS[bassString]?.[bassTone]?.family || '';
+}
+
+/**
+ * Monta a configuração de vozes da variação escolhida.
+ * @param {number} bassString - 6, 5 ou 4: onde cai a voz mais grave
+ * @param {number} bassTone - 1, 3, 5 ou 7: qual grau está no baixo
+ */
+export function buildVoicingConfig(bassString, bassTone) {
+  const v = VOICING_VARIATIONS[bassString]?.[bassTone]
+    || VOICING_VARIATIONS[bassString]?.[1]
+    || VOICING_VARIATIONS[6][1];
+  return v.order.map((chordTone, i) => ({ string: v.strings[i], chordTone }));
+}
+
 // Chord tone labels
 const CHORD_TONE_LABELS = {
   1: 'T\u00F4nica (1)',
@@ -524,15 +602,6 @@ export function getDegreeName(degree, key = 'C') {
   // um tom abaixo, e o nome correto passa a ser "Subtônica".
   if (norm === 7) return getScaleIntervals(key)[6] === 11 ? 'Sens\u00EDvel' : 'Subt\u00F4nica';
   return DEGREE_NAMES_PT[norm] || '';
-}
-
-export function getChordToneOptions() {
-  return [
-    { value: 1, label: 'T\u00F4nica (1)' },
-    { value: 3, label: 'Ter\u00E7a (3)' },
-    { value: 5, label: 'Quinta (5)' },
-    { value: 7, label: 'S\u00E9tima (7)' },
-  ];
 }
 
 export function getDiatonicChords(key) {

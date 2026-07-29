@@ -5,8 +5,10 @@ import ChordInfo from './components/ChordInfo';
 import SolfejoInfo from './components/SolfejoInfo';
 import ArpejoInfo from './components/ArpejoInfo';
 import Navigation from './components/Navigation';
+import VoicingBar from './components/VoicingBar';
 import {
   buildVoicing,
+  buildVoicingConfig,
   getChordName,
   analyzeChordQuality,
   getDegreeName,
@@ -24,6 +26,12 @@ function App() {
   const [lastSetup, setLastSetup] = useState(null);
   const [currentDegree, setCurrentDegree] = useState(1);
   const [studyMode, setStudyMode] = useState('chord'); // 'chord' | 'solfejo' | 'arpejo'
+
+  // O voicing é estado vivo da tela de exercício, não um compromisso feito no
+  // setup: trocar a inversão redesenha o braço na hora, sem sair do grau em que o
+  // estudante está.
+  const [bassString, setBassString] = useState(6);
+  const [bassTone, setBassTone] = useState(1);
 
   // Existe uma única nota corrente, tenha ela chegado ali pela reprodução ou por
   // um clique. Dois estados independentes unidos por `||` na renderização deixavam
@@ -47,12 +55,21 @@ function App() {
     setIsSolfejoPlaying(false);
   }, []);
 
-  const handleStart = ({ key, voicingConfig }, setupState) => {
-    setExerciseConfig({ key, voicingConfig });
-    setLastSetup(setupState);
+  const handleStart = (key) => {
+    setExerciseConfig({ key });
+    setLastSetup({ tonality: key });
     setCurrentDegree(1);
     resetPlayback();
   };
+
+  // Trocar o voicing move a caixa de posição em que a escala é gerada, então a
+  // sequência tocando precisa morrer junto — senão o solfejo continua na posição
+  // antiga enquanto o braço já mostra a nova.
+  const changeVoicing = useCallback((next) => {
+    if (next.bassString !== undefined) setBassString(next.bassString);
+    if (next.bassTone !== undefined) setBassTone(next.bassTone);
+    resetPlayback();
+  }, [resetPlayback]);
 
   const handleBack = useCallback(() => {
     setExerciseConfig(null);
@@ -84,7 +101,7 @@ function App() {
 
   // Calculate current voicing
   const voicingResult = isExerciseStarted
-    ? buildVoicing(exerciseConfig.key, currentDegree, exerciseConfig.voicingConfig)
+    ? buildVoicing(exerciseConfig.key, currentDegree, buildVoicingConfig(bassString, bassTone))
     : { voices: [], span: 0, playable: true };
 
   // Calculate 2-octave scale starting from current degree root note aligned with chord frets
@@ -207,6 +224,8 @@ function App() {
                 setIsPlaying={setIsSolfejoPlaying}
               />
             )}
+
+            <VoicingBar bassString={bassString} bassTone={bassTone} onChange={changeVoicing} />
 
             {/* Fretboard */}
             <Fretboard

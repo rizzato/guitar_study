@@ -10,6 +10,8 @@ import assert from 'node:assert/strict';
 import {
   SCALES, getDiatonicChords, getTwoOctaveScale, getModeName,
   getDegreeName, getTonalityName, getScaleNotes,
+  buildVoicingConfig, buildVoicing, getBassToneOptions,
+  getBassStringOptions, hasVoicingVariation,
 } from '../src/lib/musicTheory.js';
 
 // grau -> "romano symbol", conferido na mão
@@ -21,6 +23,7 @@ const ESPERADO = {
 };
 
 const TONICAS = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
+const STRING_MIDI = { 6: 40, 5: 45, 4: 50, 3: 55, 2: 59, 1: 64 };
 
 // 1. Qualidade de cada grau, em cada campo, em todas as 12 tônicas.
 for (const [scale, esperado] of Object.entries(ESPERADO)) {
@@ -98,5 +101,65 @@ assert.deepEqual(
   [...getScaleNotes('C')].sort(),
 );
 
+// 8. Todo voicing oferecido pela interface é DIGITÁVEL, não só de span curto.
+//
+//    A versão anterior deste bloco validava apenas o span (max - min <= 5) e
+//    aprovava formas impossíveis: com a terça no baixo em cordas adjacentes, os
+//    trastes saíam 5-7-3-5 — span 4, aprovado, e a mão tendo que apertar o traste
+//    3 na 4ª corda enquanto segura o 7 na 5ª. Span não vê a ORDEM.
+//
+//    O critério que importa é o salto de traste para trás entre cordas
+//    fisicamente vizinhas e ambas tocadas. Corda pulada não conta: é o vão que
+//    caracteriza drop-3 e não atrapalha a mão.
+const SALTO_MAXIMO_PARA_TRAS = 3;
+
+let voicings = 0, maiorSpanAcorde = 0, piorSalto = 0;
+for (const scale of Object.keys(SCALES)) {
+  for (const tonic of TONICAS) {
+    for (let d = 1; d <= 7; d++) {
+      for (const st of getBassStringOptions()) {
+      for (const b of getBassToneOptions()) {
+        if (!hasVoicingVariation(st.value, b.value)) continue;
+        voicings++;
+        const cfg = buildVoicingConfig(st.value, b.value);
+        assert.equal(cfg.length, 4, `voicing com ${cfg.length} vozes`);
+        assert.equal(new Set(cfg.map(v => v.chordTone)).size, 4, `grau repetido no voicing`);
+        assert.equal(cfg[0].chordTone, b.value, `baixo ${b.value}: a voz mais grave não é o grau pedido`);
+        assert.equal(cfg[0].string, st.value, `a voz mais grave não caiu na corda ${st.value}`);
+
+        const r = buildVoicing({ tonic, scale }, d, cfg);
+        const onde = `${tonic} ${SCALES[scale].label} grau ${d} corda ${st.value} baixo ${b.value}`;
+        assert.ok(r.playable, `${onde}: impraticável, span ${r.span}`);
+        if (r.span > maiorSpanAcorde) maiorSpanAcorde = r.span;
+
+        const vozes = [...r.voices].sort((a, b2) => b2.string - a.string);
+        for (const v of vozes) {
+          assert.ok(v.fret >= 0 && v.fret <= 17, `${onde}: traste ${v.fret} fora do braço`);
+        }
+        // as alturas têm que subir do baixo para o agudo
+        for (let i = 1; i < vozes.length; i++) {
+          const midiAnterior = STRING_MIDI[vozes[i - 1].string] + vozes[i - 1].fret;
+          const midiAtual = STRING_MIDI[vozes[i].string] + vozes[i].fret;
+          assert.ok(midiAtual > midiAnterior, `${onde}: voz ${i + 1} não está acima da anterior`);
+
+          if (vozes[i - 1].string - vozes[i].string !== 1) continue;
+          const salto = vozes[i].fret - vozes[i - 1].fret;
+          if (salto < piorSalto) piorSalto = salto;
+          assert.ok(salto >= -SALTO_MAXIMO_PARA_TRAS,
+            `${onde}: salto de ${salto} trastes entre cordas vizinhas ${vozes[i - 1].string} e ${vozes[i].string} — indigitável`);
+        }
+      }
+      }
+    }
+  }
+}
+
+// A lacuna declarada tem que continuar declarada: se alguém adicionar uma forma
+// para 4ª corda + terça no baixo, ela precisa passar o critério ergonômico acima,
+// e este assert força a revisão consciente.
+assert.equal(hasVoicingVariation(4, 3), false,
+  'apareceu variação para 4ª corda + terça no baixo — valide a ergonomia antes de oferecer');
+
 console.log(`Teoria dos 4 campos: 28 graus x 12 tônicas OK.`);
+console.log(`Voicings: ${voicings} combinações OK — digitáveis, ascendentes (maior span ${maiorSpanAcorde}, pior salto ${piorSalto}).`);
 console.log(`Solfejo 3NPS: ${combinacoes} combinações OK (maior traste ${maiorTraste}, maior span ${maiorSpan}).`);

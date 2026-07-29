@@ -163,70 +163,102 @@ footer kbd {
   pointer-events: none;
 }
 
-/* String configuration */
-.string-config {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
+/* ============================================================
+   Barra de voicing — vive na tela de exercício, acima do braço
+   ============================================================ */
 
-.string-row {
+.voicing-bar {
   display: flex;
+  flex-wrap: wrap;
+  gap: 12px 28px;
   align-items: center;
-  gap: 12px;
-  padding: 8px 12px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid transparent;
-  transition: all 0.25s ease;
-}
-
-.string-row.active {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: var(--glass-border);
-}
-
-.string-toggle {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 14px;
-  border-radius: 8px;
-  font-weight: 500;
-  min-width: 120px;
-}
-
-.string-toggle.on {
-  background: rgba(99, 102, 241, 0.15);
-  color: var(--accent-hover);
-  border: 1px solid rgba(99, 102, 241, 0.3);
-}
-
-.string-toggle.off {
-  background: rgba(255, 255, 255, 0.04);
-  color: var(--text-muted);
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.3);
   border: 1px solid var(--glass-border);
 }
 
-.string-toggle:hover {
-  background: rgba(99, 102, 241, 0.2);
+.voicing-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.voicing-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.chip-row {
+  display: flex;
+  gap: 4px;
+}
+
+/* 44px de alvo: a cena "violão na mão" exige dedo ocupado e impreciso. */
+.voicing-chip {
+  min-width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  font-family: var(--font-measure);
+  font-size: 0.95rem;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border);
+  color: var(--text-secondary);
+  transition: background 90ms ease, color 90ms ease;
+}
+
+.voicing-chip:hover {
+  background: rgba(255, 255, 255, 0.11);
   color: var(--text-primary);
 }
 
-.string-number {
-  font-size: 1.1rem;
-  font-weight: 700;
-  min-width: 20px;
+.voicing-chip.on {
+  background: var(--accent-primary);
+  border-color: transparent;
+  color: #fff;
 }
 
-.string-note {
-  font-size: 0.85rem;
-  opacity: 0.7;
+/* Com um controle só, cabe nomear a inversão dentro do próprio chip. */
+.voicing-chip.wide {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  min-width: 86px;
+  padding: 0 10px;
 }
 
-.chord-tone-select {
-  flex: 1;
-  max-width: 200px;
+.chip-tone { font-size: 1rem; font-weight: 600; }
+
+.voicing-chip:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.voicing-chip:disabled:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-secondary);
+}
+
+.voicing-family {
+  font-family: var(--font-measure);
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-left: auto;
+}
+
+.chip-hint {
+  font-family: var(--font-ui);
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  opacity: 0.75;
 }
 
 /* Start button */

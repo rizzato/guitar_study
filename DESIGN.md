@@ -210,7 +210,7 @@ As quatro cores de intervalo. Não são uma paleta decorativa: são um código.
 
 Container central de largura máxima 1280px com `padding: 24px 32px`, em coluna flex de altura mínima total da viewport — o rodapé é empurrado para baixo por `margin-top: auto`. O painel de configuração é mais estreito (640px), centrado, porque é um formulário e não uma bancada.
 
-A área de exercício empilha cinco blocos com `gap: 24px` numa ordem fixa e não negociável: barra de controle → painel de informação do modo → braço → navegação → barra diatônica. O braço é o centro de gravidade vertical; tudo acima dele contextualiza e tudo abaixo dele navega.
+A área de exercício empilha seis blocos com `gap: 24px` numa ordem fixa e não negociável: barra de controle → painel de informação do modo → barra de voicing → braço → navegação → barra diatônica. A barra de voicing fica imediatamente acima do braço porque é o que ela altera. O braço é o centro de gravidade vertical; tudo acima dele contextualiza e tudo abaixo dele navega.
 
 O ritmo de espaçamento não é uma escala estrita. Os passos dominantes são 4, 8, 12, 16, 24 e 32px, com valores intermediários (6, 10, 14, 20, 28) usados pontualmente onde o alinhamento óptico pediu. Trabalho novo deve preferir os passos dominantes.
 
@@ -265,6 +265,13 @@ Bordas são sempre de 1px, sempre brancas com opacidade baixa (8% em repouso, 12
 - **Estado ativo:** fundo índigo a 15%, borda índigo a 40%, e o algarismo romano vira Índigo Aceso. O chip ativo é deliberadamente mais discreto que os outros controles ativos, porque sete deles estão sempre visíveis.
 - **Chip de solfejo:** mesma família, coluna de três linhas (número do passo, nota, coordenada em mono), mínimo de 72px em grade auto-fill. Ativo usa índigo chapado e `scale(1.08)`.
 - **Círculo de quintas** (seletor de tonalidade): ver componente-assinatura abaixo. Substituiu a grade de botões de tonalidade.
+
+### Barra de Voicing
+
+Fica entre o painel de informação e o braço. Fundo preto a 30%, borda de vidro, canto 12px, `padding: 10px 16px`. Dois grupos de chips rotulados (corda do baixo, grau no baixo) e a família ativa (`drop-2` / `drop-3`) alinhada à direita em mono.
+
+- **Chip:** mínimo de 44px de alvo — a cena "violão na mão" exige dedo ocupado e impreciso. Numeral em mono; o chip de inversão é mais largo e carrega o nome da inversão abaixo do numeral.
+- **Indisponível:** combinação sem forma digitável fica `disabled` a 30% de opacidade, com `title` explicando. Desabilitar e dizer por quê é preferível a esconder a opção ou a oferecer uma forma impossível.
 
 ### Cards
 - **Card de voz** (uma corda do acorde): canto 12px, fundo preto a 30%, borda de vidro, `padding: 12px`, centralizado. Conteúdo em quatro níveis: corda (0.75rem, sutil), nota (1.5rem, peso 700, **na cor do intervalo**), traste (0.8rem, secundário), intervalo (0.7rem, sutil, itálico no detalhe).
