@@ -5,12 +5,10 @@ export default function ArpejoInfo({
   currentDegree,
   chordName,
   quality,
-  degreeName,
   arpejoNotes = [],
   activeStep = null,
-  clickedStep = null,
   onStepActive = () => {},
-  onNoteClick = () => {},
+  onNoteToggle = () => {},
   isPlaying = false,
   setIsPlaying = () => {},
 }) {
@@ -41,7 +39,10 @@ export default function ArpejoInfo({
             title="Tocar arpejo da tétrade"
             disabled={isPlaying}
           >
-            {isPlaying ? '▶ Tocando...' : '🔊 Tocar Arpejo'}
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <polygon points="7 4 20 12 7 20"></polygon>
+            </svg>
+            {isPlaying ? 'Tocando…' : 'Tocar Arpejo'}
           </button>
         </div>
         <div className="chord-meta">
@@ -59,7 +60,7 @@ export default function ArpejoInfo({
         <h3>Notas do Arpejo (T&eacute;trade asc.)</h3>
         <div className="solfejo-steps-grid">
           {arpejoNotes.map((s) => {
-            const isLit = s.stepIndex === activeStep || s.stepIndex === clickedStep;
+            const isLit = s.stepIndex === activeStep;
             const toneClass = `tone-${s.chordTone || 1}`;
             return (
               <button
@@ -67,7 +68,7 @@ export default function ArpejoInfo({
                 className={`solfejo-step-chip ${toneClass} ${isLit ? 'active' : ''}`}
                 onClick={() => {
                   playNote(s.string, s.fret);
-                  onNoteClick(s.stepIndex);
+                  onNoteToggle(s.stepIndex);
                 }}
                 title={`Passo ${s.stepIndex + 1}: ${s.note} (${s.chordToneLabel}) - Corda ${s.string}, Traste ${s.fret}`}
               >

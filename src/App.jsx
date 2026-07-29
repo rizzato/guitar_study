@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import ExerciseSetup from './components/ExerciseSetup';
 import Fretboard from './components/Fretboard';
 import ChordInfo from './components/ChordInfo';
@@ -15,7 +15,7 @@ import {
   getTwoOctaveScale,
   getArpeggioNotes,
 } from './lib/musicTheory';
-import { playChord } from './lib/audioEngine';
+import { playChord, stopScaleSequence } from './lib/audioEngine';
 import './App.css';
 
 function App() {
@@ -24,38 +24,50 @@ function App() {
   const [currentDegree, setCurrentDegree] = useState(1);
   const [studyMode, setStudyMode] = useState('chord'); // 'chord' | 'solfejo' | 'arpejo'
 
-  const [activeSolfejoStep, setActiveSolfejoStep] = useState(null);
-  const [clickedSolfejoStep, setClickedSolfejoStep] = useState(null);
+  // Existe uma única nota corrente, tenha ela chegado ali pela reprodução ou por
+  // um clique. Dois estados independentes unidos por `||` na renderização deixavam
+  // duas notas acesas ao mesmo tempo, e o clique não tinha caminho de volta.
+  const [activeStep, setActiveStep] = useState(null);
   const [isSolfejoPlaying, setIsSolfejoPlaying] = useState(false);
 
   const isExerciseStarted = exerciseConfig !== null;
+
+  // Clicar na nota já acesa apaga; clicar noutra move a luz.
+  const toggleStep = useCallback((stepIndex) => {
+    setActiveStep(prev => (prev === stepIndex ? null : stepIndex));
+  }, []);
+
+  // Any change of degree, mode or screen abandons the notes currently on the
+  // fretboard, so the running sequence must die with them: otherwise it keeps
+  // playing the old scale and keeps lighting steps in the panel that replaced it.
+  const resetPlayback = useCallback(() => {
+    stopScaleSequence();
+    setActiveStep(null);
+    setIsSolfejoPlaying(false);
+  }, []);
 
   const handleStart = ({ key, voicingConfig }, setupState) => {
     setExerciseConfig({ key, voicingConfig });
     setLastSetup(setupState);
     setCurrentDegree(1);
-    setActiveSolfejoStep(null);
-    setClickedSolfejoStep(null);
+    resetPlayback();
   };
 
-  const handleBack = () => {
+  const handleBack = useCallback(() => {
     setExerciseConfig(null);
     setCurrentDegree(1);
-    setActiveSolfejoStep(null);
-    setClickedSolfejoStep(null);
-  };
+    resetPlayback();
+  }, [resetPlayback]);
 
   const handleNext = useCallback(() => {
     setCurrentDegree(prev => (prev % 7) + 1);
-    setActiveSolfejoStep(null);
-    setClickedSolfejoStep(null);
-  }, []);
+    resetPlayback();
+  }, [resetPlayback]);
 
   const handlePrev = useCallback(() => {
     setCurrentDegree(prev => prev === 1 ? 7 : prev - 1);
-    setActiveSolfejoStep(null);
-    setClickedSolfejoStep(null);
-  }, []);
+    resetPlayback();
+  }, [resetPlayback]);
 
   // Keyboard navigation (active in all modes)
   useEffect(() => {
@@ -67,7 +79,7 @@ function App() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isExerciseStarted, handleNext, handlePrev]);
+  }, [isExerciseStarted, handleNext, handlePrev, handleBack]);
 
   // Calculate current voicing
   const voicingResult = isExerciseStarted
@@ -84,10 +96,15 @@ function App() {
     ? getArpeggioNotes(exerciseConfig.key, currentDegree, voicingResult.voices)
     : [];
 
-  // Auto-play chord when chord/degree changes (only in chord mode)
+  // Auto-play chord when chord/degree changes (only in chord mode).
+  // As vozes vão por ref de propósito: `voicingResult` é recalculado a cada render,
+  // então como dependência ele dispararia um strum por render em vez de por grau.
+  const voicesRef = useRef(voicingResult.voices);
+  voicesRef.current = voicingResult.voices;
+
   useEffect(() => {
-    if (isExerciseStarted && studyMode === 'chord' && voicingResult.voices.length > 0) {
-      playChord(voicingResult.voices);
+    if (isExerciseStarted && studyMode === 'chord' && voicesRef.current.length > 0) {
+      playChord(voicesRef.current);
     }
   }, [currentDegree, isExerciseStarted, studyMode]);
 
@@ -120,31 +137,28 @@ function App() {
                   className={`mode-btn ${studyMode === 'chord' ? 'active' : ''}`}
                   onClick={() => {
                     setStudyMode('chord');
-                    setActiveSolfejoStep(null);
-                    setClickedSolfejoStep(null);
+                    resetPlayback();
                   }}
                 >
-                  🎸 Acordes (Harmonia)
+                  Acordes
                 </button>
                 <button
                   className={`mode-btn ${studyMode === 'solfejo' ? 'active' : ''}`}
                   onClick={() => {
                     setStudyMode('solfejo');
-                    setActiveSolfejoStep(null);
-                    setClickedSolfejoStep(null);
+                    resetPlayback();
                   }}
                 >
-                  🎼 Solfejo da Escala
+                  Solfejo
                 </button>
                 <button
                   className={`mode-btn ${studyMode === 'arpejo' ? 'active' : ''}`}
                   onClick={() => {
                     setStudyMode('arpejo');
-                    setActiveSolfejoStep(null);
-                    setClickedSolfejoStep(null);
+                    resetPlayback();
                   }}
                 >
-                  🎹 Arpejo do Acorde (T&eacute;trade)
+                  Arpejo
                 </button>
               </div>
             </div>
@@ -170,10 +184,9 @@ function App() {
                 quality={quality}
                 modeName={modeName}
                 solfejoNotes={solfejoNotes}
-                activeSolfejoStep={activeSolfejoStep}
-                clickedSolfejoStep={clickedSolfejoStep}
-                onStepActive={(stepIndex) => setActiveSolfejoStep(stepIndex)}
-                onNoteClick={(stepIndex) => setClickedSolfejoStep(stepIndex)}
+                activeStep={activeStep}
+                onStepActive={setActiveStep}
+                onNoteToggle={toggleStep}
                 isPlaying={isSolfejoPlaying}
                 setIsPlaying={setIsSolfejoPlaying}
               />
@@ -184,12 +197,10 @@ function App() {
                 currentDegree={currentDegree}
                 chordName={chordName}
                 quality={quality}
-                degreeName={degreeName}
                 arpejoNotes={arpejoNotes}
-                activeStep={activeSolfejoStep}
-                clickedStep={clickedSolfejoStep}
-                onStepActive={(stepIndex) => setActiveSolfejoStep(stepIndex)}
-                onNoteClick={(stepIndex) => setClickedSolfejoStep(stepIndex)}
+                activeStep={activeStep}
+                onStepActive={setActiveStep}
+                onNoteToggle={toggleStep}
                 isPlaying={isSolfejoPlaying}
                 setIsPlaying={setIsSolfejoPlaying}
               />
@@ -201,9 +212,8 @@ function App() {
               playable={voicingResult.playable}
               mode={studyMode}
               solfejoNotes={studyMode === 'arpejo' ? arpejoNotes : solfejoNotes}
-              activeSolfejoStep={activeSolfejoStep}
-              clickedSolfejoStep={clickedSolfejoStep}
-              onSolfejoNoteClick={(stepIndex) => setClickedSolfejoStep(stepIndex)}
+              activeStep={activeStep}
+              onNoteToggle={toggleStep}
             />
 
             {/* Navigation & Diatonic Chords Bar (Available in BOTH modes) */}
@@ -224,8 +234,7 @@ function App() {
                     className={`diatonic-chip ${c.degree === currentDegree ? 'active' : ''}`}
                     onClick={() => {
                       setCurrentDegree(c.degree);
-                      setActiveSolfejoStep(null);
-                      setClickedSolfejoStep(null);
+                      resetPlayback();
                     }}
                   >
                     <span className="chip-roman">{c.quality.roman}</span>

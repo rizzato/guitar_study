@@ -256,21 +256,6 @@ export function buildVoicing(key, degree, voicingConfig) {
   return { voices, span, playable };
 }
 
-// Major scale 2-octave intervals (semitones from root)
-const TWO_OCTAVE_INTERVALS = [0, 2, 4, 5, 7, 9, 11, 12, 14, 16, 17, 19, 21, 23, 24];
-
-/**
- * Map step index (0..14) of a 2-octave major scale to a guitar string (6..1)
- */
-const SCALE_STRING_MAP = [
-  6, 6, 6, // 1, 2, 3
-  5, 5, 5, // 4, 5, 6
-  4, 4, 4, // 7, 1, 2
-  3, 3, 3, // 3, 4, 5
-  2, 2,    // 6, 7
-  1,       // 1
-];
-
 // Strict 3-Notes-Per-String layout maps (15 steps = 5 strings x 3 notes/string)
 const STRICT_3NPS_MAP_6 = [6,6,6, 5,5,5, 4,4,4, 3,3,3, 2,2,2];
 const STRICT_3NPS_MAP_5 = [5,5,5, 4,4,4, 3,3,3, 2,2,2, 1,1,1];
