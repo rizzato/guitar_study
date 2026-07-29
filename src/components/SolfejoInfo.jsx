@@ -7,10 +7,9 @@ export default function SolfejoInfo({
   quality,
   modeName,
   solfejoNotes = [],
-  activeSolfejoStep = null,
-  clickedSolfejoStep = null,
+  activeStep = null,
   onStepActive = () => {},
-  onNoteClick = () => {},
+  onNoteToggle = () => {},
   isPlaying = false,
   setIsPlaying = () => {},
 }) {
@@ -41,7 +40,10 @@ export default function SolfejoInfo({
             title="Tocar solfejo da escala"
             disabled={isPlaying}
           >
-            {isPlaying ? '▶ Tocando...' : '🔊 Tocar Solfejo'}
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <polygon points="7 4 20 12 7 20"></polygon>
+            </svg>
+            {isPlaying ? 'Tocando…' : 'Tocar Solfejo'}
           </button>
         </div>
         <div className="chord-meta">
@@ -59,7 +61,7 @@ export default function SolfejoInfo({
         <h3>Sequ&ecirc;ncia do Solfejo (15 notas &bull; 2 Oitavas)</h3>
         <div className="solfejo-steps-grid">
           {solfejoNotes.map((s) => {
-            const isLit = s.stepIndex === activeSolfejoStep || s.stepIndex === clickedSolfejoStep;
+            const isLit = s.stepIndex === activeStep;
             const toneClass = s.chordTone > 0 ? `tone-${s.chordTone}` : 'tone-default';
             return (
               <button
@@ -67,7 +69,7 @@ export default function SolfejoInfo({
                 className={`solfejo-step-chip ${toneClass} ${isLit ? 'active' : ''}`}
                 onClick={() => {
                   playNote(s.string, s.fret);
-                  onNoteClick(s.stepIndex);
+                  onNoteToggle(s.stepIndex);
                 }}
                 title={`Passo ${s.stepIndex + 1}: ${s.note} (Corda ${s.string}, Traste ${s.fret})`}
               >

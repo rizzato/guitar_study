@@ -131,14 +131,22 @@ export function playChord(voices = [], strumSpeedMs = 35) {
 let currentScaleTimer = null;
 
 /**
- * Play a sequence of scale notes step-by-step for solfège.
- * Calls onStepActive(stepIndex) at each note timing, and onComplete() when done.
+ * Stop any running scale sequence. Safe to call when nothing is playing.
+ * Does not fire onComplete: the caller is abandoning the sequence, not finishing it.
  */
-export function playScaleSequence(scaleNotes = [], onStepActive, onComplete, stepIntervalMs = 300) {
+export function stopScaleSequence() {
   if (currentScaleTimer) {
     clearInterval(currentScaleTimer);
     currentScaleTimer = null;
   }
+}
+
+/**
+ * Play a sequence of scale notes step-by-step for solfège.
+ * Calls onStepActive(stepIndex) at each note timing, and onComplete() when done.
+ */
+export function playScaleSequence(scaleNotes = [], onStepActive, onComplete, stepIntervalMs = 300) {
+  stopScaleSequence();
 
   if (!scaleNotes || scaleNotes.length === 0) return;
 
@@ -146,10 +154,7 @@ export function playScaleSequence(scaleNotes = [], onStepActive, onComplete, ste
 
   const playCurrentStep = () => {
     if (index >= scaleNotes.length) {
-      if (currentScaleTimer) {
-        clearInterval(currentScaleTimer);
-        currentScaleTimer = null;
-      }
+      stopScaleSequence();
       if (onStepActive) onStepActive(null);
       if (onComplete) onComplete();
       return;

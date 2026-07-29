@@ -6,8 +6,12 @@ export default function ChordInfo({ chordName, quality, currentDegree, degreeNam
   return (
     <div className={`chord-info glass-panel ${!playable ? 'unplayable' : ''}`}>
       {!playable && (
-        <div className="playability-warning">
-          <span className="warning-icon">&#9888;</span>
+        <div className="playability-warning" role="alert">
+          <svg className="warning-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"></path>
+            <line x1="12" y1="9" x2="12" y2="13"></line>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
           <span>
             Abertura de <strong>{span} trastes</strong> &mdash; excede o m&aacute;ximo de 5 casas.
             Este acorde n&atilde;o &eacute; execut&aacute;vel nesta disposi&ccedil;&atilde;o.
@@ -23,8 +27,11 @@ export default function ChordInfo({ chordName, quality, currentDegree, degreeNam
             className="play-chord-btn"
             onClick={() => playChord(voicing)}
             title="Tocar este acorde"
+            aria-label={`Tocar o acorde ${chordName}`}
           >
-            🔊
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <polygon points="7 4 20 12 7 20"></polygon>
+            </svg>
           </button>
         </div>
         <div className="chord-meta">

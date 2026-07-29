@@ -10,9 +10,8 @@ export default function Fretboard({
   playable = true,
   mode = 'chord',
   solfejoNotes = [],
-  activeSolfejoStep = null,
-  clickedSolfejoStep = null,
-  onSolfejoNoteClick = () => {},
+  activeStep = null,
+  onNoteToggle = () => {},
 }) {
   const strings = getStringInfo();
   const frets = Array.from({ length: FRET_COUNT + 1 }, (_, i) => i);
@@ -58,10 +57,9 @@ export default function Fretboard({
               {strings.map(s => {
                 const active = getActiveNote(s.string, fretNum);
 
-                let isLit = false;
-                if ((mode === 'solfejo' || mode === 'arpejo') && active) {
-                  isLit = active.stepIndex === activeSolfejoStep || active.stepIndex === clickedSolfejoStep;
-                }
+                const isLit = (mode === 'solfejo' || mode === 'arpejo')
+                  && active
+                  && active.stepIndex === activeStep;
 
                 let opacityClass = '';
                 if ((mode === 'solfejo' || mode === 'arpejo') && active) {
@@ -79,7 +77,7 @@ export default function Fretboard({
                         onClick={() => {
                           playNote(s.string, fretNum);
                           if (mode === 'solfejo' || mode === 'arpejo') {
-                            onSolfejoNoteClick(active.stepIndex);
+                            onNoteToggle(active.stepIndex);
                           }
                         }}
                         title={`Tocar nota ${active.note} (Corda ${s.string}, Traste ${fretNum})`}
