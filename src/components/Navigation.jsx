@@ -1,4 +1,4 @@
-export default function Navigation({ currentDegree, selectedKey, diatonicChords, onNext, onPrev }) {
+export default function Navigation({ currentDegree, tonalityName, diatonicChords, onNext, onPrev }) {
   const currentChord = diatonicChords.find(c => c.degree === currentDegree);
 
   return (
@@ -14,7 +14,7 @@ export default function Navigation({ currentDegree, selectedKey, diatonicChords,
         <div className="nav-degree-indicator">
           <span className="nav-roman">{currentChord?.quality.roman}</span>
           <span className="nav-divider">&bull;</span>
-          <span className="nav-key">{selectedKey} maior</span>
+          <span className="nav-key">{tonalityName}</span>
         </div>
         <div className="nav-progress">
           {[1, 2, 3, 4, 5, 6, 7].map(d => (

@@ -46,24 +46,24 @@ Um app de acordes vizinho não copia isso sem reimplementar a resolução de voi
 
 **Confirmado e implementado:**
 
-- 12 tonalidades maiores; 7 graus do campo harmônico maior; acordes de tétrade (1-3-5-7).
+- 24 tonalidades (12 tônicas × maior/menor); 7 graus por campo; acordes de tétrade (1-3-5-7).
 - Voicing de até 4 vozes com atribuição livre de intervalo por corda.
+- Seleção de tonalidade por círculo de quintas: maiores, relativas menores e forma do menor em três anéis concêntricos.
 - Braço de 17 casas; violão de 6 cordas em afinação padrão (E2 A2 D3 G3 B3 E4).
-- Regra ergonômica das 5 casas, com alerta de tocabilidade quando excedida.
+- Regra ergonômica das 5 casas no acorde, com alerta de tocabilidade quando excedida.
 - Solfejo modal de 2 oitavas em padrão estrito 3 notas por corda (3NPS), 15 notas em 5 cordas consecutivas.
 - Arpejo de tétrade em 2 oitavas, iniciando na nota mais grave do voicing montado.
 - Síntese de áudio via Web Audio API — osciladores e filtro, sem arquivos de samples.
 - React 19 + Vite 8, CSS puro, sem dependências de UI.
+- Quatro campos harmônicos: **maior**, **menor natural**, **menor harmônica** e **menor melódica** — 24 tonalidades. A menor melódica existe apenas na forma ascendente, porque o solfejo do app é ascendente por construção e nunca desce; a forma descendente é o menor natural e não teria onde aparecer.
+- As qualidades de acorde são **derivadas dos intervalos calculados**, não tabeladas por grau. Um trio de semitons (terça, quinta, sétima) determina a tétrade, então a qualidade nunca discorda da escala que a gerou. `test/scales.mjs` trava os 28 graus contra valores conferidos à mão.
+- A regra ergonômica das 5 casas vale para **acorde**, onde os dedos são simultâneos. Escala é sequencial e a mão desloca: o solfejo da menor harmônica e da melódica chega a 6 trastes de span, o que é normal e não dispara alerta.
 
 **Limites atuais:**
 
 - A configuração do exercício sobrevive apenas em memória (volta preservada ao sair do exercício), não entre recarregamentos de página.
 - Nenhum registro de progresso, histórico ou repetição espaçada.
 - Sem modo offline explícito (nenhum service worker).
-
-**Crescimento confirmado, sem escopo ou prazo definidos:**
-
-- Campo harmônico **menor** e outros modos. A navegação por grau e a barra diatônica precisarão comportar mais de um campo harmônico — hoje ambos assumem "7 graus do maior" como estrutura fixa.
 
 **Explicitamente indeciso — não assumir em trabalho futuro:**
 

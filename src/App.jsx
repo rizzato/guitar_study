@@ -12,6 +12,7 @@ import {
   getDegreeName,
   getModeName,
   getDiatonicChords,
+  getTonalityName,
   getTwoOctaveScale,
   getArpeggioNotes,
 } from './lib/musicTheory';
@@ -110,9 +111,10 @@ function App() {
 
   const chordName = isExerciseStarted ? getChordName(exerciseConfig.key, currentDegree) : '';
   const quality = isExerciseStarted ? analyzeChordQuality(exerciseConfig.key, currentDegree) : null;
-  const degreeName = getDegreeName(currentDegree);
-  const modeName = getModeName(currentDegree);
+  const degreeName = isExerciseStarted ? getDegreeName(currentDegree, exerciseConfig.key) : '';
+  const modeName = isExerciseStarted ? getModeName(currentDegree, exerciseConfig.key) : '';
   const diatonicChords = isExerciseStarted ? getDiatonicChords(exerciseConfig.key) : [];
+  const tonalityName = isExerciseStarted ? getTonalityName(exerciseConfig.key) : '';
 
   return (
     <div className="app-container">
@@ -170,7 +172,7 @@ function App() {
                 quality={quality}
                 currentDegree={currentDegree}
                 degreeName={degreeName}
-                selectedKey={exerciseConfig.key}
+                tonalityName={tonalityName}
                 voicing={voicingResult.voices}
                 span={voicingResult.span}
                 playable={voicingResult.playable}
@@ -178,7 +180,7 @@ function App() {
             )}
             {studyMode === 'solfejo' && (
               <SolfejoInfo
-                selectedKey={exerciseConfig.key}
+                tonalityName={tonalityName}
                 currentDegree={currentDegree}
                 chordName={chordName}
                 quality={quality}
@@ -193,7 +195,7 @@ function App() {
             )}
             {studyMode === 'arpejo' && (
               <ArpejoInfo
-                selectedKey={exerciseConfig.key}
+                tonalityName={tonalityName}
                 currentDegree={currentDegree}
                 chordName={chordName}
                 quality={quality}
@@ -219,14 +221,14 @@ function App() {
             {/* Navigation & Diatonic Chords Bar (Available in BOTH modes) */}
             <Navigation
               currentDegree={currentDegree}
-              selectedKey={exerciseConfig.key}
+              tonalityName={tonalityName}
               diatonicChords={diatonicChords}
               onNext={handleNext}
               onPrev={handlePrev}
             />
 
             <div className="diatonic-bar">
-              <h3>Campo Harm&ocirc;nico de {exerciseConfig.key} Maior (Selecione o Grau)</h3>
+              <h3>Campo Harm&ocirc;nico de {getTonalityName(exerciseConfig.key)} (Selecione o Grau)</h3>
               <div className="diatonic-chords">
                 {diatonicChords.map(c => (
                   <button

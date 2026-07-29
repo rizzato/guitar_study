@@ -51,24 +51,11 @@ footer kbd {
    ============================================================ */
 
 .setup-panel {
-  max-width: 640px;
+  max-width: 560px;
   margin: 16px auto;
   display: flex;
   flex-direction: column;
   gap: 28px;
-}
-
-.setup-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.setup-icon {
-  font-size: 1.8rem;
-  color: var(--accent-primary);
 }
 
 .setup-section {
@@ -85,36 +72,95 @@ footer kbd {
   color: var(--text-secondary);
 }
 
-/* Key selector — 6 colunas divide as 12 tonalidades em 2 linhas exatas.
-   Em flex-wrap o "B" sobrava sozinho numa terceira linha. */
-.key-selector {
-  display: grid;
-  grid-template-columns: repeat(6, minmax(48px, 1fr));
-  gap: 8px;
-  max-width: 400px;
+/* ============================================================
+   Círculo de quintas — é o herói da tela de configuração
+   ============================================================ */
+
+.circle-focusable {
+  line-height: 0;
+  border-radius: 50%;
+  align-self: stretch;
 }
 
-.key-btn {
+/* Sem outline: ele seguiria a caixa quadrada e apareceria como retângulo em volta
+   do círculo. O foco é a circunferência .circle-focus-ring, desenhada dentro. */
+.circle-focusable:focus,
+.circle-focusable:focus-visible {
+  outline: none;
+}
+
+/* Sem max-width: o círculo ocupa a largura que o painel oferece. É o herói da
+   tela, e o gargalo de tamanho é o painel, não ele. */
+.circle-fifths {
   width: 100%;
-  height: 42px;
-  border-radius: 10px;
+  height: auto;
+  display: block;
+}
+
+.circle-focus-ring {
+  fill: none;
+  stroke: var(--accent-primary);
+  stroke-width: 2;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 90ms ease;
+}
+
+/* Acende com foco, seja por clique ou por teclado. */
+.circle-focusable:focus .circle-focus-ring {
+  opacity: 1;
+}
+
+.circle-sector {
+  fill: rgba(255, 255, 255, 0.05);
+  stroke: none;
+  outline: none;
+  cursor: pointer;
+  transition: fill 90ms ease;
+}
+
+.circle-sector.inner { fill: rgba(255, 255, 255, 0.03); }
+.circle-sector.form  { fill: rgba(255, 255, 255, 0.02); }
+
+.circle-sector:hover { fill: rgba(255, 255, 255, 0.11); }
+
+.circle-sector.on {
+  fill: var(--accent-primary);
+}
+
+/* Sem uma menor ativa, o anel de forma recua: continua clicável e leva à relativa
+   menor, mas não disputa atenção com a escolha de tônica. */
+.form-ring-idle { opacity: 0.45; }
+
+.circle-label {
+  font-family: var(--font-measure);
+  text-anchor: middle;
+  dominant-baseline: middle;
+  pointer-events: none;
+  fill: var(--text-secondary);
+}
+
+.circle-label.major { font-size: 19px; font-weight: 600; }
+.circle-label.minor { font-size: 15px; font-weight: 500; fill: var(--text-muted); }
+.circle-label.form  { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; fill: var(--text-muted); }
+.circle-label.on    { fill: #fff; }
+
+.circle-center-tonic {
+  font-family: var(--font-measure);
+  font-size: 40px;
   font-weight: 600;
-  font-size: 0.95rem;
-  background: rgba(255, 255, 255, 0.04);
-  color: var(--text-secondary);
-  border: 1px solid var(--glass-border);
+  text-anchor: middle;
+  fill: var(--text-primary);
+  pointer-events: none;
 }
 
-.key-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--text-primary);
-  border-color: rgba(255, 255, 255, 0.2);
-}
-
-.key-btn.active {
-  background: var(--accent-primary);
-  color: white;
-  border-color: transparent;
+.circle-center-scale {
+  font-size: 11px;
+  text-anchor: middle;
+  fill: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  pointer-events: none;
 }
 
 /* String configuration */
@@ -961,12 +1007,6 @@ footer kbd {
 @media (max-width: 768px) {
   .app-container {
     padding: 16px;
-  }
-
-  /* 4 colunas mantém as 12 tonalidades em linhas exatas (3), sem órfã. */
-  .key-selector {
-    grid-template-columns: repeat(4, 1fr);
-    max-width: none;
   }
 
   header h1 {

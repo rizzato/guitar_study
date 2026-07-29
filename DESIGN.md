@@ -82,13 +82,11 @@ components:
     padding: "8px 18px"
   button-ghost-hover:
     textColor: "{colors.text-primary}"
-  key-toggle:
-    backgroundColor: "rgba(255, 255, 255, 0.04)"
+  circle-sector:
+    backgroundColor: "rgba(255, 255, 255, 0.05)"
     textColor: "{colors.text-secondary}"
-    rounded: "{rounded.lg}"
-    width: "48px"
-    height: "42px"
-  key-toggle-active:
+    typography: "{typography.measure}"
+  circle-sector-active:
     backgroundColor: "{colors.accent-indigo}"
     textColor: "#ffffff"
   mode-tab:
@@ -266,7 +264,7 @@ Bordas são sempre de 1px, sempre brancas com opacidade baixa (8% em repouso, 12
 - **Chip diatônico** (grau do campo harmônico): coluna com algarismo romano acima e cifra abaixo, fundo branco a 4%, borda de vidro, canto 10px, `flex: 1` com mínimo de 70px — os sete graus dividem a largura igualmente.
 - **Estado ativo:** fundo índigo a 15%, borda índigo a 40%, e o algarismo romano vira Índigo Aceso. O chip ativo é deliberadamente mais discreto que os outros controles ativos, porque sete deles estão sempre visíveis.
 - **Chip de solfejo:** mesma família, coluna de três linhas (número do passo, nota, coordenada em mono), mínimo de 72px em grade auto-fill. Ativo usa índigo chapado e `scale(1.08)`.
-- **Botão de tonalidade:** 48×42px em grade de 6 colunas (4 no mobile), índigo chapado quando ativo.
+- **Círculo de quintas** (seletor de tonalidade): ver componente-assinatura abaixo. Substituiu a grade de botões de tonalidade.
 
 ### Cards
 - **Card de voz** (uma corda do acorde): canto 12px, fundo preto a 30%, borda de vidro, `padding: 12px`, centralizado. Conteúdo em quatro níveis: corda (0.75rem, sutil), nota (1.5rem, peso 700, **na cor do intervalo**), traste (0.8rem, secundário), intervalo (0.7rem, sutil, itálico no detalhe).
@@ -282,6 +280,16 @@ Bordas são sempre de 1px, sempre brancas com opacidade baixa (8% em repouso, 12
 - **Indicador central:** algarismo romano em Índigo Aceso (1.3rem, peso 700), separador sutil, tonalidade em secundário.
 - **Progresso:** sete pontos de 10px; o ativo vira índigo sólido com `scale(1.3)`.
 - **Abas de modo:** grupo segmentado sobre fundo preto a 40% com padding de 4px e canto 12px; a aba ativa recebe índigo chapado e canto 8px. Rótulos são de uma palavra (Acordes · Solfejo · Arpejo), sem ícone.
+
+### O Círculo de Quintas (signature)
+
+Seletor de tonalidade da tela de configuração, e o herói dela: ocupa a largura do painel. Três faixas concêntricas em SVG, separadas por folga angular de 2,2° — nenhuma tem `stroke`, porque 24 traços desenham uma teia que compete com os rótulos.
+
+- **Anel externo** (raio 158–208): as 12 maiores, uma por raio de 30°, Dó no topo, sentido das quintas.
+- **Anel do meio** (110–154): a relativa menor de cada raio. Mesma armadura da maior ao lado — é por isso que estão no mesmo raio, e é o que dispensa legenda escrita.
+- **Anel interno** (74–106): a forma do menor em três arcos de 120° — `NAT`, `HARM`, `MEL`. Com uma maior ativa ele recua a 45% de opacidade mas segue clicável, levando à relativa menor naquela forma; o anel nunca fica sem resposta.
+- **Mostrador central:** tônica em mono 40px mais o nome do campo em caixa alta. É ele que decodifica a abreviação do anel interno, e a razão de não haver texto explicativo ao lado do controle.
+- **Foco:** o elemento focável é um `<div>` que envolve o SVG, nunca o SVG nem os setores. O indicador é uma `<circle>` desenhada dentro, porque `outline` de CSS acompanha a caixa do elemento e sairia retangular em volta do círculo. Um único ponto de tabulação; setas percorrem as quintas, ↑↓ alternam maior e menor, 1–3 escolhem a forma.
 
 ### O Braço (signature)
 

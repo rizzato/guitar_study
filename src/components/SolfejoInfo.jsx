@@ -1,7 +1,7 @@
 import { playNote, playScaleSequence } from '../lib/audioEngine';
 
 export default function SolfejoInfo({
-  selectedKey,
+  tonalityName,
   currentDegree,
   chordName,
   quality,
@@ -49,10 +49,10 @@ export default function SolfejoInfo({
         <div className="chord-meta">
           <span className="degree-badge">Grau {currentDegree} ({chordName})</span>
           <span className="degree-name">{modeName}</span>
-          <span className="key-context">em {selectedKey} maior</span>
+          <span className="key-context">em {tonalityName}</span>
         </div>
         <p className="quality-name">
-          2 oitavas iniciando na nota <strong>{rootNote}</strong> (Grau {quality?.roman} do campo harm&ocirc;nico de {selectedKey}).
+          2 oitavas iniciando na nota <strong>{rootNote}</strong> (Grau {quality?.roman} do campo harm&ocirc;nico de {tonalityName}).
           Clique nas notas no bra&ccedil;o ou no bot&atilde;o de som para ouvir.
         </p>
       </div>

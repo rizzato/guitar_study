@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { getAllKeys, getStringInfo, getChordToneOptions } from '../lib/musicTheory';
+import { getStringInfo, getChordToneOptions } from '../lib/musicTheory';
+import CircleOfFifths from './CircleOfFifths';
 
 export default function ExerciseSetup({ onStart, initialSetup }) {
-  const [selectedKey, setSelectedKey] = useState(initialSetup?.selectedKey || 'F');
+  const [tonality, setTonality] = useState(initialSetup?.tonality || { tonic: 'F', scale: 'major' });
   const [selectedStrings, setSelectedStrings] = useState(initialSetup?.selectedStrings || [6, 5, 4, 3]);
   const [assignments, setAssignments] = useState(initialSetup?.assignments || {
     6: 1,  // Tonica
@@ -11,7 +12,6 @@ export default function ExerciseSetup({ onStart, initialSetup }) {
     3: 3,  // Terca
   });
 
-  const keys = getAllKeys();
   const strings = getStringInfo();
   const chordTones = getChordToneOptions();
 
@@ -40,31 +40,16 @@ export default function ExerciseSetup({ onStart, initialSetup }) {
       .sort((a, b) => b - a)
       .map(s => ({ string: s, chordTone: assignments[s] || 1 }));
     onStart(
-      { key: selectedKey, voicingConfig },
-      { selectedKey, selectedStrings, assignments }
+      { key: tonality, voicingConfig },
+      { tonality, selectedStrings, assignments }
     );
   };
 
   return (
     <div className="setup-panel">
-      <h2 className="setup-title">
-        <span className="setup-icon">&#9835;</span>
-        Configurar Exerc&iacute;cio
-      </h2>
-
       <div className="setup-section">
         <label className="setup-label">Tonalidade</label>
-        <div className="key-selector">
-          {keys.map(k => (
-            <button
-              key={k}
-              className={`key-btn ${selectedKey === k ? 'active' : ''}`}
-              onClick={() => setSelectedKey(k)}
-            >
-              {k}
-            </button>
-          ))}
-        </div>
+        <CircleOfFifths tonality={tonality} onChange={setTonality} />
       </div>
 
       <div className="setup-section">
