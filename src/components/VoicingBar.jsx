@@ -8,6 +8,8 @@ import {
 // Variações do mesmo acorde, logo acima do braço. Dois eixos que o violonista já
 // usa: em qual corda cai o baixo (região) e qual grau está no baixo (inversão).
 // Combinação sem forma digitável aparece desabilitada em vez de oferecer armadilha.
+// Renderizada apenas no modo Acordes, por decisão do App: fora dele o acorde não
+// está visível e as três posições não produzem três escalas distintas.
 export default function VoicingBar({ bassString, bassTone, onChange }) {
   const family = getVoicingFamily(bassString, bassTone);
 

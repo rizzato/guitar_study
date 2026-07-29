@@ -225,7 +225,17 @@ function App() {
               />
             )}
 
-            <VoicingBar bassString={bassString} bassTone={bassTone} onChange={changeVoicing} />
+            {/* Só no modo Acordes. Fora dele o acorde não está na tela, e as três
+                posições de referência colapsam em duas escalas — o solfejo 3NPS
+                precisa de 5 cordas consecutivas, então só pode nascer na 6ª ou na
+                5ª. Três botões para duas saídas é promessa falsa. */}
+            {studyMode === 'chord' && (
+              <VoicingBar
+                bassString={bassString}
+                bassTone={bassTone}
+                onChange={changeVoicing}
+              />
+            )}
 
             {/* Fretboard */}
             <Fretboard
