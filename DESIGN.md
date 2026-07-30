@@ -27,12 +27,12 @@ colors:
 typography:
   display:
     fontFamily: "IBM Plex Sans, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif"
-    fontSize: "3.2rem"
+    fontSize: "3.8rem"
     fontWeight: 700
     letterSpacing: "-0.02em"
   headline:
     fontFamily: "IBM Plex Sans, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif"
-    fontSize: "2.8rem"
+    fontSize: "1.15rem"
     fontWeight: 700
     letterSpacing: "-0.02em"
   title:
@@ -191,8 +191,8 @@ As quatro cores de intervalo. Não são uma paleta decorativa: são um código.
 **Caráter:** desenhada para engenharia, não para marca. A Plex tem sotaque próprio nas terminações e nos numerais — o suficiente para o app não parecer um template, longe o bastante do bloco Inter/Geist/Jakarta em que a interface gerada por máquina converge. A personalidade vem do desenho da letra e do contraste de peso, nunca de efeito aplicado ao texto.
 
 ### Hierarchy
-- **Display** (700, 3.2rem, `-0.02em`): o nome do acorde. É o maior elemento do app por decisão: é a resposta que o estudante procura.
-- **Headline** (600, 2.8rem, `-0.02em`): o título do app no cabeçalho. Cai para 2rem abaixo de 768px.
+- **Display** (700, 3.8rem, `-0.02em`): o nome do acorde. É o maior elemento do app por decisão: é a resposta que o estudante procura.
+- **Headline** (600, 1.15rem, `-0.01em`, Texto Secundário): a assinatura do app no cabeçalho. Deliberadamente pequena e discreta — ela divide a linha com as abas de modo e não disputa atenção com o acorde, que é o herói real da tela.
 - **Title** (700, 1.5rem): título de painel de configuração.
 - **Body** (400, 1rem): valores lidos — nome de nota nos cards, contexto de tonalidade.
 - **Label** (600, 0.85rem, `0.08em`, caixa alta): rótulo de seção. É o único uso de caixa alta no sistema.
@@ -210,7 +210,15 @@ As quatro cores de intervalo. Não são uma paleta decorativa: são um código.
 
 Container central de largura máxima 1280px com `padding: 24px 32px`, em coluna flex de altura mínima total da viewport — o rodapé é empurrado para baixo por `margin-top: auto`. O painel de configuração é mais estreito (640px), centrado, porque é um formulário e não uma bancada.
 
-A área de exercício empilha seis blocos com `gap: 24px` numa ordem fixa e não negociável: barra de controle → painel de informação do modo → barra de voicing → braço → navegação → barra diatônica. A barra de voicing fica imediatamente acima do braço porque é o que ela altera. O braço é o centro de gravidade vertical; tudo acima dele contextualiza e tudo abaixo dele navega.
+Não há tela de configuração: o app abre direto no exercício. A tela empilha três blocos com `gap: 24px`, mais um botão flutuante:
+
+1. **Cabeçalho de uma linha** — assinatura à esquerda, abas de modo à direita. Ele já ocupou ~250px com título de 2.8rem e subtítulo; no celular isso comia a primeira dobra inteira.
+2. **Acorde ativo ladeado pelo carrossel** — as setas de grau emolduram o painel em vez de morarem num painel próprio. O acorde é o herói e o alvo da navegação ao mesmo tempo.
+3. **Bloco de controles** — campo harmônico e voicing juntos, imediatamente acima do braço porque é o que eles alteram.
+4. **Braço**, o centro de gravidade da tela.
+5. **FAB de tonalidade**, fixo no canto inferior direito.
+
+Antes eram seis blocos, com três sistemas de navegação e o grau declarado em quatro lugares.
 
 O ritmo de espaçamento não é uma escala estrita. Os passos dominantes são 4, 8, 12, 16, 24 e 32px, com valores intermediários (6, 10, 14, 20, 28) usados pontualmente onde o alinhamento óptico pediu. Trabalho novo deve preferir os passos dominantes.
 
@@ -283,20 +291,29 @@ Fica entre o painel de informação e o braço. Fundo preto a 30%, borda de vidr
 - **Foco:** borda índigo e anel `0 0 0 2px` em `rgba(99,102,241,0.35)`. Todo controle focável por teclado recebe `outline: 2px solid` índigo com `outline-offset: 2px`.
 
 ### Navigation
-- **Botões de grau:** fundo branco a 6%, borda de vidro, canto 12px, ícone SVG de 18px que desliza 3px na direção do movimento no hover. Abaixo de 768px o texto some e sobra só o ícone.
+- **Setas de grau:** ladeiam o painel do acorde, 52px de largura e altura total do bloco, cantos de 16px. Discretas em repouso (branco a 4%, texto secundário) e acesas no hover. Não são um painel — são a moldura do herói.
+- **Botões de grau (legado):** fundo branco a 6%, borda de vidro, canto 12px, ícone SVG de 18px que desliza 3px na direção do movimento no hover. Abaixo de 768px o texto some e sobra só o ícone.
 - **Indicador central:** algarismo romano em Índigo Aceso (1.3rem, peso 700), separador sutil, tonalidade em secundário.
 - **Progresso:** sete pontos de 10px; o ativo vira índigo sólido com `scale(1.3)`.
 - **Abas de modo:** grupo segmentado sobre fundo preto a 40% com padding de 4px e canto 12px; a aba ativa recebe índigo chapado e canto 8px. Rótulos são de uma palavra (Acordes · Solfejo · Arpejo), sem ícone.
 
 ### O Círculo de Quintas (signature)
 
-Seletor de tonalidade da tela de configuração, e o herói dela: ocupa a largura do painel. Três faixas concêntricas em SVG, separadas por folga angular de 2,2° — nenhuma tem `stroke`, porque 24 traços desenham uma teia que compete com os rótulos.
+Seletor de tonalidade, vive na sobreposição aberta pelo FAB. Três faixas concêntricas em SVG, separadas por folga angular de 2,2° — nenhuma tem `stroke`, porque 24 traços desenham uma teia que compete com os rótulos.
 
 - **Anel externo** (raio 158–208): as 12 maiores, uma por raio de 30°, Dó no topo, sentido das quintas.
 - **Anel do meio** (110–154): a relativa menor de cada raio. Mesma armadura da maior ao lado — é por isso que estão no mesmo raio, e é o que dispensa legenda escrita.
 - **Anel interno** (74–106): a forma do menor em três arcos de 120° — `NAT`, `HARM`, `MEL`. Com uma maior ativa ele recua a 45% de opacidade mas segue clicável, levando à relativa menor naquela forma; o anel nunca fica sem resposta.
 - **Mostrador central:** tônica em mono 40px mais o nome do campo em caixa alta. É ele que decodifica a abreviação do anel interno, e a razão de não haver texto explicativo ao lado do controle.
 - **Foco:** o elemento focável é um `<div>` que envolve o SVG, nunca o SVG nem os setores. O indicador é uma `<circle>` desenhada dentro, porque `outline` de CSS acompanha a caixa do elemento e sairia retangular em volta do círculo. Um único ponto de tabulação; setas percorrem as quintas, ↑↓ alternam maior e menor, 1–3 escolhem a forma.
+
+### FAB de Tonalidade
+
+Botão flutuante circular de **56px** no canto inferior direito, mostrando só a tônica (`F`, `Am`, `C#m`). Abre o círculo de quintas numa sobreposição com `role="dialog"`, `aria-modal`, scrim a 72% e blur de 6px; fecha com `Esc`, clique fora, ou nova seleção, devolvendo o foco ao botão.
+
+**A Regra do Conteúdo Curto.** O FAB carrega no máximo a tônica. Tentativas de incluir o nome do campo ("Menor harmônica") produziram: elipse com texto cortado (`border-radius: 50%` com largura automática), depois blob quase quadrado ao virar pílula, depois um botão que mudava de largura — e portanto de posição — a cada troca de tonalidade. O campo ativo vive no mostrador central do círculo e nas cifras da barra de grau.
+
+Nenhum elemento de conteúdo pode morar no canto inferior direito: o FAB é fixo e vai cobri-lo. O rótulo da família drop-2/drop-3 já apareceu cortado por isso.
 
 ### O Braço (signature)
 

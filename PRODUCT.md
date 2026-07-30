@@ -10,7 +10,7 @@ web
 
 Estudantes de violão em geral, sem professor ao lado — mas **não iniciantes em teoria**. O público real já domina os fundamentos de harmonia funcional: sabe o que é um voicing, o que são tônica/terça/quinta/sétima, e consegue atribuir graus do acorde a cordas sem que ninguém explique. Confirmado explicitamente pelo usuário em 2026-07-29, revisando uma leitura anterior que assumia o contrário.
 
-Consequência para o design: onboarding, glossário e explicação embutida **não** são requisitos. A tela de configuração pode continuar sendo um formulário direto. O que continua valendo é o oposto — o app não pode afirmar algo musicalmente falso, porque este público percebe.
+Consequência para o design: onboarding, glossário e explicação embutida **não** são requisitos. O que continua valendo é o oposto — o app não pode afirmar algo musicalmente falso, porque este público percebe.
 
 Duas cenas de uso confirmadas, ambas reais:
 
@@ -52,7 +52,7 @@ Um app de acordes vizinho não copia isso sem reimplementar a resolução de voi
 - Voicing de 4 vozes escolhido entre variações curadas: 3 cordas de baixo × 4 inversões, menos uma combinação sem forma digitável (4ª corda com terça no baixo), declarada e desabilitada na interface.
 - Cada variação saiu de força bruta sobre 5 conjuntos de cordas × 24 ordens de voz × 4032 combinações de campo/tônica/grau, exigindo alturas ascendentes e salto de traste para trás nunca abaixo de −2 entre cordas fisicamente vizinhas e ambas tocadas.
 - Troca de voicing ao vivo na tela de exercício, preservando o grau atual.
-- Seleção de tonalidade por círculo de quintas: maiores, relativas menores e forma do menor em três anéis concêntricos.
+- Tela única: o app abre direto no exercício, sem etapa de configuração. A tonalidade é trocada por um botão flutuante que abre o círculo de quintas — maiores, relativas menores e forma do menor em três anéis concêntricos.
 - Braço de 17 casas; violão de 6 cordas em afinação padrão (E2 A2 D3 G3 B3 E4).
 - Regra ergonômica das 5 casas no acorde. O alerta de tocabilidade continua no código, mas nenhuma variação oferecida o dispara: por construção, todas são digitáveis. Ele cobre apenas configuração vinda de fora da interface.
 - Solfejo modal de 2 oitavas em padrão estrito 3 notas por corda (3NPS), 15 notas em 5 cordas consecutivas.
