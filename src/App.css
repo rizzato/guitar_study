@@ -66,18 +66,13 @@ footer kbd {
   background: var(--accent-primary);
   color: #fff;
   box-shadow: var(--lift-md);
-  transition: background 120ms ease, transform 120ms ease;
+  transition: background 120ms ease, transform 120ms ease, opacity 140ms ease;
 }
 
 .tonality-fab:hover { background: var(--accent-hover); }
 
 /* Feedback de toque sem deslocar layout. */
 .tonality-fab:active { transform: scale(0.94); }
-
-.tonality-fab.open {
-  background: var(--bg-surface);
-  color: var(--text-primary);
-}
 
 .tonality-fab:focus-visible {
   outline: 2px solid var(--accent-hover);
@@ -102,7 +97,11 @@ footer kbd {
   background: rgba(6, 6, 15, 0.72);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
-  animation: overlayIn 0.12s ease-out;
+  animation: overlayIn 200ms ease-out;
+}
+
+.tonality-overlay.saindo {
+  animation: overlayIn 170ms ease-in reverse;
 }
 
 @keyframes overlayIn {
@@ -110,6 +109,10 @@ footer kbd {
   to { opacity: 1; }
 }
 
+/* O painel nasce do FAB: mesma posição, mesmo tamanho, mesmo raio. É a regra
+   modal-motion — a sobreposição anima a partir da origem que a disparou, senão
+   ela aparece do nada e o estudante perde a relação de causa. As variáveis são
+   medidas em JS porque a distância depende de onde o painel centralizou. */
 .tonality-panel {
   width: 100%;
   max-width: 480px;
@@ -120,6 +123,38 @@ footer kbd {
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--glass-border);
   box-shadow: var(--glass-shadow);
+
+  --morph-x: 0px;
+  --morph-y: 0px;
+  --morph-scale: 0.12;
+  animation: morphIn 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.tonality-panel.saindo {
+  animation: morphIn 170ms cubic-bezier(0.4, 0, 1, 1) reverse;
+}
+
+/* Só transform e opacity animam de fato o layout; o raio é uma propriedade
+   barata num elemento só e é o que vende a ideia de "o botão virou o círculo". */
+@keyframes morphIn {
+  from {
+    transform: translate(var(--morph-x), var(--morph-y)) scale(var(--morph-scale));
+    border-radius: 50%;
+    opacity: 0;
+  }
+  55% { opacity: 1; }
+  to {
+    transform: none;
+    border-radius: 16px;
+    opacity: 1;
+  }
+}
+
+/* Enquanto o painel existe o botão some: ele "virou" o círculo, e mantê-lo
+   visível por baixo quebraria a ilusão. Fecha com Esc ou clique fora. */
+.tonality-fab.open {
+  opacity: 0;
+  pointer-events: none;
 }
 
 /* ============================================================
