@@ -1,6 +1,8 @@
 import { playNote, playChord } from '../lib/audioEngine';
+import { useTranslation } from '../lib/i18n';
 
 export default function ChordInfo({ chordName, quality, currentDegree, degreeName, tonalityName, voicing, span, playable }) {
+  const { t } = useTranslation();
   if (!quality || !voicing.length) return null;
 
   return (
@@ -13,8 +15,7 @@ export default function ChordInfo({ chordName, quality, currentDegree, degreeNam
             <line x1="12" y1="17" x2="12.01" y2="17"></line>
           </svg>
           <span>
-            Abertura de <strong>{span} trastes</strong> &mdash; excede o m&aacute;ximo de 5 casas.
-            Este acorde n&atilde;o &eacute; execut&aacute;vel nesta disposi&ccedil;&atilde;o.
+            {t('spanWarning', { span })}
           </span>
         </div>
       )}
@@ -26,8 +27,8 @@ export default function ChordInfo({ chordName, quality, currentDegree, degreeNam
           <button
             className="play-chord-btn"
             onClick={() => playChord(voicing)}
-            title="Tocar este acorde"
-            aria-label={`Tocar o acorde ${chordName}`}
+            title={t('playChord')}
+            aria-label={t('playChordAria', { chord: chordName })}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <polygon points="7 4 20 12 7 20"></polygon>
@@ -35,30 +36,32 @@ export default function ChordInfo({ chordName, quality, currentDegree, degreeNam
           </button>
         </div>
         <div className="chord-meta">
-          <span className="degree-badge">Grau {currentDegree}</span>
+          <span className="degree-badge">{t('degreeBadge', { degree: currentDegree })}</span>
           <span className="degree-name">{degreeName}</span>
-          <span className="key-context">em {tonalityName}</span>
+          <span className="key-context">{t('keyContext', { tonality: tonalityName })}</span>
         </div>
         <p className="quality-name">{quality.name}</p>
         {playable && (
-          <p className="span-info">Abertura: {span} {span === 1 ? 'traste' : 'trastes'}</p>
+          <p className="span-info">
+            {t('spanInfo', { span, unit: span === 1 ? t('fretSingular') : t('fretPlural') })}
+          </p>
         )}
       </div>
 
       <div className="chord-voices">
-        <h3>Vozes do Acorde (clique para ouvir a nota)</h3>
+        <h3>{t('chordVoicesTitle')}</h3>
         <div className="voices-grid">
           {[...voicing].sort((a, b) => b.string - a.string).map(v => (
             <div
               key={v.string}
               className={`voice-card tone-${v.chordTone} clickable`}
               onClick={() => playNote(v.string, v.fret)}
-              title={`Ouvir ${v.note}`}
+              title={t('listenNote', { note: v.note })}
             >
-              <div className="voice-string">{v.string}&ordf; corda</div>
+              <div className="voice-string">{t('voiceStringNum', { num: v.string })}</div>
               <div className="voice-note">{v.note}</div>
               <div className="voice-info">
-                <span className="voice-fret">Traste {v.fret}</span>
+                <span className="voice-fret">{t('voiceFret', { fret: v.fret })}</span>
                 <span className="voice-interval">{v.chordToneLabel}</span>
                 <span className="voice-interval-detail">{v.intervalName}</span>
               </div>

@@ -163,10 +163,10 @@ export function getBassStringOptions() {
 
 export function getBassToneOptions() {
   return [
-    { value: 1, label: 'Tônica', hint: 'fundamental' },
-    { value: 3, label: 'Terça', hint: '1ª inversão' },
-    { value: 5, label: 'Quinta', hint: '2ª inversão' },
-    { value: 7, label: 'Sétima', hint: '3ª inversão' },
+    { value: 1, label: 'Tônica', hint: 'fundamental', hintKey: 'root' },
+    { value: 3, label: 'Terça', hint: '1ª inversão', hintKey: 'inv1' },
+    { value: 5, label: 'Quinta', hint: '2ª inversão', hintKey: 'inv2' },
+    { value: 7, label: 'Sétima', hint: '3ª inversão', hintKey: 'inv3' },
   ];
 }
 
@@ -175,9 +175,16 @@ export function hasVoicingVariation(bassString, bassTone) {
   return Boolean(VOICING_VARIATIONS[bassString]?.[bassTone]);
 }
 
+const FAMILY_KEYS = {
+  'drop-2': 'family_drop2',
+  'drop-3': 'family_drop3',
+  'drop-2-4': 'family_drop24',
+};
+
 /** A família (drop-2 / drop-3) da variação ativa, para exibir ao estudante. */
 export function getVoicingFamily(bassString, bassTone) {
-  return VOICING_VARIATIONS[bassString]?.[bassTone]?.family || '';
+  const family = VOICING_VARIATIONS[bassString]?.[bassTone]?.family;
+  return FAMILY_KEYS[family] || family || '';
 }
 
 /**
@@ -274,7 +281,8 @@ export function getIntervalName(semitones) {
   return names[((semitones % 12) + 12) % 12] || '';
 }
 
-export function analyzeChordQuality(key, degree) {
+export function analyzeChordQuality(key, degree, lang = 'pt-BR') {
+  const dict = translations[lang] || translations['pt-BR'];
   const root = getScaleDegreeNote(key, degree);
   const third = getChordToneNote(key, degree, 3);
   const fifth = getChordToneNote(key, degree, 5);
@@ -286,14 +294,26 @@ export function analyzeChordQuality(key, degree) {
 
   const norm = ((degree - 1) % 7 + 7) % 7 + 1;
   const tetrad = TETRAD_BY_INTERVALS[`${i3},${i5},${i7}`]
-    || { symbol: '?', triad: 'menor', name: 'Tétrade fora do cat\u00E1logo' };
+    || { symbol: '?', triad: 'menor', name: 'Tétrade fora do catálogo' };
+
+  let tetradTranslationKey = '';
+  if (tetrad.symbol === 'maj7') tetradTranslationKey = 'tetrad_maj7';
+  else if (tetrad.symbol === 'm7') tetradTranslationKey = 'tetrad_m7';
+  else if (tetrad.symbol === '7') tetradTranslationKey = 'tetrad_7';
+  else if (tetrad.symbol === 'm7(b5)') tetradTranslationKey = 'tetrad_m7_b5';
+  else if (tetrad.symbol === '°7') tetradTranslationKey = 'tetrad_dim7';
+  else if (tetrad.symbol === 'm(maj7)') tetradTranslationKey = 'tetrad_m_maj7';
+  else if (tetrad.symbol === 'maj7(#5)') tetradTranslationKey = 'tetrad_maj7_sharp5';
+
+  const translatedName = dict[tetradTranslationKey] || tetrad.name;
 
   return {
     root, third, fifth, seventh,
     intervals: { third: i3, fifth: i5, seventh: i7 },
     symbol: tetrad.symbol,
-    name: tetrad.name,
+    name: translatedName,
     roman: buildRoman(norm, tetrad.triad),
+    triad: tetrad.triad,
   };
 }
 
@@ -579,10 +599,14 @@ export function getArpeggioNotes(key, degree = 1, voicing = []) {
     }));
 }
 
-export function getModeName(degree, key = 'C') {
+import { translations } from './i18n';
+
+export function getModeName(degree, key = 'C', lang = 'pt-BR') {
+  const dict = translations[lang] || translations['pt-BR'];
   const { scale } = normalizeTonality(key);
-  const norm = ((degree - 1) % 7 + 7) % 7;
-  return SCALES[scale].modes[norm] || '';
+  const norm = ((degree - 1) % 7 + 7) % 7 + 1;
+  const modeKey = `mode_${scale}_${norm}`;
+  return dict[modeKey] || SCALES[scale]?.modes[norm - 1] || '';
 }
 
 export function getAllKeys() {
@@ -596,22 +620,28 @@ export function getStringInfo() {
   }));
 }
 
-export function getDegreeName(degree, key = 'C') {
+export function getDegreeName(degree, key = 'C', lang = 'pt-BR') {
+  const dict = translations[lang] || translations['pt-BR'];
   const norm = ((degree - 1) % 7 + 7) % 7 + 1;
-  // Só é "Sensível" quando dista um semitom da tônica. No menor natural a 7ª é
-  // um tom abaixo, e o nome correto passa a ser "Subtônica".
-  if (norm === 7) return getScaleIntervals(key)[6] === 11 ? 'Sens\u00EDvel' : 'Subt\u00F4nica';
-  return DEGREE_NAMES_PT[norm] || '';
+  if (norm === 7) {
+    const isSensible = getScaleIntervals(key)[6] === 11;
+    if (isSensible) return dict.degree_7 || DEGREE_NAMES_PT[7];
+    if (lang === 'en') return 'Subtonic';
+    if (lang === 'fr') return 'Sous-tonique';
+    if (lang === 'es') return 'Subtónica';
+    return 'Subtônica';
+  }
+  return dict[`degree_${norm}`] || DEGREE_NAMES_PT[norm] || '';
 }
 
-export function getDiatonicChords(key) {
+export function getDiatonicChords(key, lang = 'pt-BR') {
   return Array.from({ length: 7 }, (_, i) => {
     const degree = i + 1;
     return {
       degree,
-      degreeName: getDegreeName(degree, key),
+      degreeName: getDegreeName(degree, key, lang),
       chordName: getChordName(key, degree),
-      quality: analyzeChordQuality(key, degree),
+      quality: analyzeChordQuality(key, degree, lang),
       root: getScaleDegreeNote(key, degree),
     };
   });

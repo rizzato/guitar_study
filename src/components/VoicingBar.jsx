@@ -4,34 +4,33 @@ import {
   hasVoicingVariation,
   getVoicingFamily,
 } from '../lib/musicTheory';
+import { useTranslation } from '../lib/i18n';
 
-// Variações do mesmo acorde, logo acima do braço. Dois eixos que o violonista já
-// usa: em qual corda cai o baixo (região) e qual grau está no baixo (inversão).
-// Combinação sem forma digitável aparece desabilitada em vez de oferecer armadilha.
-// Renderizada apenas no modo Acordes, por decisão do App: fora dele o acorde não
-// está visível e as três posições não produzem três escalas distintas.
 export default function VoicingBar({ bassString, bassTone, onChange }) {
-  const family = getVoicingFamily(bassString, bassTone);
+  const { t, lang } = useTranslation();
+  const familyKey = getVoicingFamily(bassString, bassTone);
+  const familyText = familyKey ? (t(familyKey) !== familyKey ? t(familyKey) : familyKey) : null;
 
   return (
     <div className="voicing-bar">
       <div className="voicing-field">
-        <span className="voicing-label" id="vb-corda">Baixo na corda</span>
+        <span className="voicing-label" id="vb-corda">{t('bassStringLabel')}</span>
         <div className="chip-row" role="radiogroup" aria-labelledby="vb-corda">
           {getBassStringOptions().map(s => {
             const avail = hasVoicingVariation(s.value, bassTone);
+            const labelText = t('stringNumLabel', { num: s.value });
             return (
               <button
                 key={s.value}
                 className={`voicing-chip ${bassString === s.value ? 'on' : ''}`}
                 role="radio"
                 aria-checked={bassString === s.value}
-                aria-label={`Baixo na ${s.label} corda`}
+                aria-label={t('stringAriaLabel', { num: s.value })}
                 disabled={!avail}
-                title={avail ? undefined : 'Sem forma digitável nesta combinação'}
+                title={avail ? undefined : t('voicingUnavailable')}
                 onClick={() => onChange({ bassString: s.value })}
               >
-                {s.label}
+                {labelText}
               </button>
             );
           })}
@@ -39,30 +38,31 @@ export default function VoicingBar({ bassString, bassTone, onChange }) {
       </div>
 
       <div className="voicing-field">
-        <span className="voicing-label" id="vb-baixo">Grau no baixo</span>
+        <span className="voicing-label" id="vb-baixo">{t('bassToneLabel')}</span>
         <div className="chip-row" role="radiogroup" aria-labelledby="vb-baixo">
-          {getBassToneOptions().map(b => {
+          {getBassToneOptions(lang).map(b => {
             const avail = hasVoicingVariation(bassString, b.value);
+            const hintText = t(`hint_${b.hintKey}`) || b.hint;
             return (
               <button
                 key={b.value}
                 className={`voicing-chip wide ${bassTone === b.value ? 'on' : ''}`}
                 role="radio"
                 aria-checked={bassTone === b.value}
-                aria-label={`${b.label}, ${b.hint}`}
+                aria-label={`${b.label}, ${hintText}`}
                 disabled={!avail}
-                title={avail ? undefined : 'Sem forma digitável nesta combinação'}
+                title={avail ? undefined : t('voicingUnavailable')}
                 onClick={() => onChange({ bassTone: b.value })}
               >
                 <span className="chip-tone">{b.value}</span>
-                <span className="chip-hint">{b.hint}</span>
+                <span className="chip-hint">{hintText}</span>
               </button>
             );
           })}
         </div>
       </div>
 
-      {family && <span className="voicing-family">{family}</span>}
+      {familyText && <span className="voicing-family">{familyText}</span>}
     </div>
   );
 }

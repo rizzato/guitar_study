@@ -1,4 +1,5 @@
 import { SCALES } from '../lib/musicTheory';
+import { useTranslation } from '../lib/i18n';
 
 // Ordem do círculo de quintas. Cada raio carrega a maior e a sua relativa menor,
 // que é a mesma armadura — a forma do controle é a própria teoria que o app ensina.
@@ -17,8 +18,6 @@ const SPOKES = [
   { major: 'F',  minor: 'D'  },
 ];
 
-// Anel mais interno: qual forma do menor. Três arcos de 120°, com a abreviação
-// decodificada pelo mostrador central a cada seleção.
 const FORMS = [
   { scale: 'minorNatural',  short: 'NAT' },
   { scale: 'minorHarmonic', short: 'HARM' },
@@ -28,7 +27,6 @@ const FORMS = [
 const SIZE = 440;
 const C = SIZE / 2;
 
-// Quatro faixas concêntricas: maiores, menores, forma do menor, mostrador.
 const R = {
   majorOut: 208, majorIn: 158,
   minorOut: 154, minorIn: 110,
@@ -43,7 +41,6 @@ function polar(radius, deg) {
   return { x: C + radius * Math.cos(a), y: C + radius * Math.sin(a) };
 }
 
-/** Setor anelar centrado em `midDeg`, com largura `spanDeg` menos a folga. */
 function arcPath(rIn, rOut, midDeg, spanDeg) {
   const half = rad((spanDeg - GAP_DEG) / 2);
   const mid = rad(midDeg - 90);
@@ -62,15 +59,13 @@ function arcPath(rIn, rOut, midDeg, spanDeg) {
 }
 
 export default function CircleOfFifths({ tonality, onChange }) {
+  const { t } = useTranslation();
   const isMinor = tonality.scale !== 'major';
   const minorForm = isMinor ? tonality.scale : 'minorNatural';
   const spokeIndex = SPOKES.findIndex(s => (isMinor ? s.minor : s.major) === tonality.tonic);
   const spoke = SPOKES[spokeIndex] ?? SPOKES[0];
 
   const pickTonic = (tonic, minor) => onChange({ tonic, scale: minor ? minorForm : 'major' });
-
-  // Clicar numa forma enquanto uma maior está ativa leva à relativa menor naquela
-  // forma. O anel nunca fica sem resposta.
   const pickForm = (scale) => onChange({ tonic: isMinor ? tonality.tonic : spoke.minor, scale });
 
   const handleKeyDown = (e) => {
@@ -91,12 +86,12 @@ export default function CircleOfFifths({ tonality, onChange }) {
     <div
       className="circle-focusable"
       role="group"
-      aria-label="Tonalidade. Setas esquerda e direita percorrem as quintas, para cima e para baixo alternam maior e menor relativa, teclas 1 a 3 escolhem a forma do menor."
+      aria-label={t('circleAriaGroup')}
       tabIndex={0}
       onKeyDown={handleKeyDown}
     >
       <svg className="circle-fifths" viewBox={`0 0 ${SIZE} ${SIZE}`}>
-        <g role="radiogroup" aria-label="Tônica e modo">
+        <g role="radiogroup" aria-label={t('circleSpokeGroup')}>
           {SPOKES.map((s, i) => {
             const mid = i * 30;
             const majorOn = !isMinor && tonality.tonic === s.major;
@@ -109,7 +104,7 @@ export default function CircleOfFifths({ tonality, onChange }) {
                 <path
                   className={`circle-sector outer ${majorOn ? 'on' : ''}`}
                   d={arcPath(R.majorIn, R.majorOut, mid, 30)}
-                  role="radio" aria-checked={majorOn} aria-label={`${s.major} maior`}
+                  role="radio" aria-checked={majorOn} aria-label={`${s.major} ${t('majorLabelSuffix')}`}
                   onClick={() => pickTonic(s.major, false)}
                 />
                 <text className={`circle-label major ${majorOn ? 'on' : ''}`} x={mp.x} y={mp.y}>{s.major}</text>
@@ -117,7 +112,7 @@ export default function CircleOfFifths({ tonality, onChange }) {
                 <path
                   className={`circle-sector inner ${minorOn ? 'on' : ''}`}
                   d={arcPath(R.minorIn, R.minorOut, mid, 30)}
-                  role="radio" aria-checked={minorOn} aria-label={`${s.minor} menor`}
+                  role="radio" aria-checked={minorOn} aria-label={`${s.minor} ${t('minorLabelSuffix')}`}
                   onClick={() => pickTonic(s.minor, true)}
                 />
                 <text className={`circle-label minor ${minorOn ? 'on' : ''}`} x={np.x} y={np.y}>{s.minor}m</text>
@@ -126,18 +121,19 @@ export default function CircleOfFifths({ tonality, onChange }) {
           })}
         </g>
 
-        <g role="radiogroup" aria-label="Forma do menor" className={isMinor ? '' : 'form-ring-idle'}>
+        <g role="radiogroup" aria-label={t('circleFormGroup')} className={isMinor ? '' : 'form-ring-idle'}>
           {FORMS.map((f, i) => {
             const mid = i * 120;
             const on = isMinor && minorForm === f.scale;
             const fp = polar((R.formOut + R.formIn) / 2, mid);
+            const scaleLabel = t(`scale_${f.scale}`) || SCALES[f.scale].label;
             return (
               <g key={f.scale}>
                 <path
                   className={`circle-sector form ${on ? 'on' : ''}`}
                   d={arcPath(R.formIn, R.formOut, mid, 120)}
                   role="radio" aria-checked={on}
-                  aria-label={`${SCALES[f.scale].label}${isMinor ? '' : ' (leva à relativa menor)'}`}
+                  aria-label={`${scaleLabel}${isMinor ? '' : ' ' + t('formToRelative')}`}
                   onClick={() => pickForm(f.scale)}
                 />
                 <text className={`circle-label form ${on ? 'on' : ''}`} x={fp.x} y={fp.y}>{f.short}</text>
@@ -146,13 +142,11 @@ export default function CircleOfFifths({ tonality, onChange }) {
           })}
         </g>
 
-        {/* Mostrador: decodifica a abreviação do anel de forma, o que dispensa
-            qualquer legenda escrita ao lado do controle. */}
         <text className="circle-center-tonic" x={C} y={C - 2}>
           {tonality.tonic}{isMinor ? 'm' : ''}
         </text>
         <text className="circle-center-scale" x={C} y={C + 22}>
-          {SCALES[tonality.scale].label}
+          {t(`scale_${tonality.scale}`) || SCALES[tonality.scale].label}
         </text>
 
         <circle className="circle-focus-ring" cx={C} cy={C} r={R.majorOut + 6} />

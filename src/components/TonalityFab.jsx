@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import CircleOfFifths from './CircleOfFifths';
 import { getTonalityName, SCALES, normalizeTonality } from '../lib/musicTheory';
+import { useTranslation } from '../lib/i18n';
 
 // Espelha .tonality-panel.saindo no CSS. Entrada é 260ms; a saída é mais curta
 // de propósito, porque sair devagar faz a interface parecer lenta.
@@ -10,15 +11,13 @@ const semMovimento = () =>
   typeof window !== 'undefined' &&
   window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
-// A tonalidade deixou de ser uma tela e virou um botão flutuante: ela é escolhida
-// uma vez e revisitada raramente, mas quando é revisitada precisa estar a um
-// toque, sem rolagem. No canto inferior fica na zona do polegar, que é a cena
-// "violão na mão" descrita no PRODUCT.md.
 export default function TonalityFab({ tonality, onChange, open, onOpenChange }) {
+  const { t } = useTranslation();
   const painelRef = useRef(null);
   const overlayRef = useRef(null);
   const botaoRef = useRef(null);
   const { scale } = normalizeTonality(tonality);
+  const scaleLabel = t(`scale_${scale}`) || SCALES[scale].label;
 
   // `open` é a intenção; `montado` é o que está na tela. Eles divergem durante a
   // animação de saída, que precisa terminar antes de o painel desaparecer.
@@ -34,22 +33,12 @@ export default function TonalityFab({ tonality, onChange, open, onOpenChange }) 
     return () => clearTimeout(t);
   }, [open, montado]);
 
-  // O painel nasce de onde o botão está: mesma posição, mesmo tamanho, mesmo raio.
-  // Medido em useLayoutEffect para o primeiro quadro já sair transformado — em
-  // useEffect haveria um quadro com o painel inteiro antes da animação começar.
   useLayoutEffect(() => {
     if (!montado || saindo) return;
     const painel = painelRef.current;
     const botao = botaoRef.current;
     if (!painel || !botao) return;
 
-    // Medir sem tocar na animação. getBoundingClientRect devolveria a caixa JÁ
-    // TRANSFORMADA pelo quadro inicial, e suspender a animação para medir a
-    // cancelava (o reflow entre `none` e `''` faz o browser tratá-la como já
-    // consumida, e o painel ficava parado no estado inicial).
-    //
-    // offsetWidth ignora transform, e o centro do painel é o centro da
-    // sobreposição, que não é transformada — daí não precisar medi-lo.
     const overlay = overlayRef.current;
     if (!overlay) return;
     const o = overlay.getBoundingClientRect();
@@ -65,8 +54,6 @@ export default function TonalityFab({ tonality, onChange, open, onOpenChange }) 
 
     const fechar = () => { onOpenChange(false); botaoRef.current?.focus(); };
     const onKey = (e) => {
-      // Esc fecha aqui em vez de propagar: sem tela de configuração, não há
-      // mais "voltar", e a sobreposição é o único contexto que Esc pode desfazer.
       if (e.key === 'Escape') { e.stopPropagation(); e.preventDefault(); fechar(); }
     };
     const onClickFora = (e) => {
@@ -91,7 +78,7 @@ export default function TonalityFab({ tonality, onChange, open, onOpenChange }) 
         onClick={() => onOpenChange(!open)}
         aria-expanded={open}
         aria-haspopup="dialog"
-        aria-label={`Tonalidade: ${getTonalityName(tonality)}, ${SCALES[scale].label}. Tocar para trocar.`}
+        aria-label={t('tonalityFabLabel', { name: getTonalityName(tonality), scale: scaleLabel })}
       >
         <span className="fab-tonic">{getTonalityName(tonality)}</span>
       </button>
@@ -103,7 +90,7 @@ export default function TonalityFab({ tonality, onChange, open, onOpenChange }) 
             ref={painelRef}
             role="dialog"
             aria-modal="true"
-            aria-label="Escolher tonalidade"
+            aria-label={t('selectTonalityTitle')}
           >
             <CircleOfFifths tonality={tonality} onChange={onChange} />
           </div>

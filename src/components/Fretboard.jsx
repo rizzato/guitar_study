@@ -1,5 +1,6 @@
 import { getStringInfo } from '../lib/musicTheory';
 import { playNote } from '../lib/audioEngine';
+import { useTranslation } from '../lib/i18n';
 
 const FRET_COUNT = 17;
 const FRET_MARKERS = [3, 5, 7, 9, 12, 15, 17];
@@ -13,6 +14,7 @@ export default function Fretboard({
   activeStep = null,
   onNoteToggle = () => {},
 }) {
+  const { t } = useTranslation();
   const strings = getStringInfo();
   const frets = Array.from({ length: FRET_COUNT + 1 }, (_, i) => i);
 
@@ -35,7 +37,7 @@ export default function Fretboard({
 
   return (
     <div className={`fretboard-wrapper ${mode === 'chord' && !playable ? 'unplayable' : ''}`}>
-      <div className="fretboard-container">
+      <div className="fretboard-container" aria-label={t('fretboardAria', { count: FRET_COUNT })}>
         {/* Open string labels */}
         <div className="open-string-labels">
           {strings.map(s => (
@@ -80,7 +82,7 @@ export default function Fretboard({
                             onNoteToggle(active.stepIndex);
                           }
                         }}
-                        title={`Tocar nota ${active.note} (Corda ${s.string}, Traste ${fretNum})`}
+                        title={t('noteOnFret', { note: active.note, string: s.string, fret: fretNum })}
                       >
                         <span className="note-label">{active.note}</span>
                       </div>
