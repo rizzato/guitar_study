@@ -1,7 +1,7 @@
 import { playNote, playScaleSequence } from '../lib/audioEngine';
 
 export default function ArpejoInfo({
-  selectedKey,
+  tonalityName,
   currentDegree,
   chordName,
   quality,
@@ -48,7 +48,7 @@ export default function ArpejoInfo({
         <div className="chord-meta">
           <span className="degree-badge">Grau {currentDegree} ({quality?.roman})</span>
           <span className="degree-name">T&eacute;trade (1 &bull; 3 &bull; 5 &bull; 7)</span>
-          <span className="key-context">em {selectedKey} maior</span>
+          <span className="key-context">em {tonalityName}</span>
         </div>
         <p className="quality-name">
           T&ocirc;nica, Ter&ccedil;a, Quinta e S&eacute;tima ascendentes em 2 oitavas a partir da nota mais grave ({rootNote}).

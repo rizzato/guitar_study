@@ -1,6 +1,6 @@
 import { playNote, playChord } from '../lib/audioEngine';
 
-export default function ChordInfo({ chordName, quality, currentDegree, degreeName, selectedKey, voicing, span, playable }) {
+export default function ChordInfo({ chordName, quality, currentDegree, degreeName, tonalityName, voicing, span, playable }) {
   if (!quality || !voicing.length) return null;
 
   return (
@@ -37,7 +37,7 @@ export default function ChordInfo({ chordName, quality, currentDegree, degreeNam
         <div className="chord-meta">
           <span className="degree-badge">Grau {currentDegree}</span>
           <span className="degree-name">{degreeName}</span>
-          <span className="key-context">em {selectedKey} maior</span>
+          <span className="key-context">em {tonalityName}</span>
         </div>
         <p className="quality-name">{quality.name}</p>
         {playable && (

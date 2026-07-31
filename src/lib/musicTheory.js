@@ -9,8 +9,89 @@ const CHROMATIC_FLATS = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', '
 // Keys that use flats
 const FLAT_KEYS = ['F', 'Bb', 'Eb', 'Ab', 'Db', 'Gb'];
 
+// Tônicas menores que grafam com bemol. Ré/Sol/Dó/Fá menores porque seus
+// relativos maiores (Fá/Sib/Mib/Láb) têm bemol; as demais porque a própria
+// tônica já vem escrita com bemol na lista de tonalidades do app.
+const FLAT_MINOR_TONICS = ['D', 'G', 'C', 'F', 'Bb', 'Eb'];
+
 // Major scale intervals in semitones from root
 const MAJOR_SCALE_INTERVALS = [0, 2, 4, 5, 7, 9, 11];
+
+// ------------------------------------------------------------
+// Campos harmônicos
+// ------------------------------------------------------------
+// A melódica aparece só na forma ascendente. O solfejo deste app é ascendente
+// por construção e nunca desce, então a forma descendente (que é o menor
+// natural) não teria onde ser usada.
+export const SCALES = {
+  major: {
+    label: 'Maior',
+    suffix: '',            // sufixo do nome da tonalidade: "F"
+    intervals: [0, 2, 4, 5, 7, 9, 11],
+    modes: ['Jônio (Maior)', 'Dórico', 'Frígio', 'Lídio', 'Mixolídio', 'Eólio', 'Lócrio'],
+  },
+  minorNatural: {
+    label: 'Menor natural',
+    suffix: 'm',           // "Am"
+    intervals: [0, 2, 3, 5, 7, 8, 10],
+    modes: ['Eólio (Menor natural)', 'Lócrio', 'Jônio', 'Dórico', 'Frígio', 'Lídio', 'Mixolídio'],
+  },
+  minorHarmonic: {
+    label: 'Menor harmônica',
+    suffix: 'm',
+    intervals: [0, 2, 3, 5, 7, 8, 11],
+    modes: ['Menor harmônica', 'Lócrio ♮6', 'Jônio ♯5', 'Dórico ♯4', 'Frígio dominante', 'Lídio ♯2', 'Superlócrio ♭♭7'],
+  },
+  minorMelodic: {
+    label: 'Menor melódica',
+    suffix: 'm',
+    intervals: [0, 2, 3, 5, 7, 9, 11],
+    modes: ['Menor melódica', 'Dórico ♭2', 'Lídio ♯5', 'Lídio dominante', 'Mixolídio ♭6', 'Lócrio ♮2', 'Superlócrio (alterada)'],
+  },
+};
+
+/**
+ * Aceita a tonalidade como string ('F' = maior, retrocompatível) ou como
+ * objeto { tonic, scale }.
+ */
+export function normalizeTonality(key) {
+  if (typeof key === 'string') return { tonic: key, scale: 'major' };
+  return { tonic: key.tonic, scale: key.scale in SCALES ? key.scale : 'major' };
+}
+
+export function getScaleIntervals(key) {
+  return SCALES[normalizeTonality(key).scale].intervals;
+}
+
+/** Nome da tonalidade como o estudante a lê: "F", "Am", "C#m". */
+export function getTonalityName(key) {
+  const { tonic, scale } = normalizeTonality(key);
+  return `${tonic}${SCALES[scale].suffix}`;
+}
+
+// Trio de semitons (terça, quinta, sétima) -> tétrade. Derivar daqui em vez de
+// tabelar por grau significa que a qualidade nunca discorda da escala que a
+// gerou, em nenhum dos quatro campos.
+const TETRAD_BY_INTERVALS = {
+  '4,7,11':  { symbol: 'maj7',      triad: 'maior',       name: 'Maior com sétima maior' },
+  '3,7,10':  { symbol: 'm7',        triad: 'menor',       name: 'Menor com sétima menor' },
+  '4,7,10':  { symbol: '7',         triad: 'maior',       name: 'Dominante (sétima menor)' },
+  '3,6,10':  { symbol: 'm7(b5)',    triad: 'diminuto',    name: 'Meio-diminuto' },
+  '3,6,9':   { symbol: '°7',   triad: 'diminuto7',   name: 'Diminuto (sétima diminuta)' },
+  '3,7,11':  { symbol: 'm(maj7)',   triad: 'menor',       name: 'Menor com sétima maior' },
+  '4,8,11':  { symbol: 'maj7(#5)',  triad: 'aumentado',   name: 'Maior com sétima maior e quinta aumentada' },
+};
+
+const ROMAN_BASE = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII'];
+
+function buildRoman(degree, triad) {
+  const base = ROMAN_BASE[degree - 1];
+  if (triad === 'maior') return base;
+  if (triad === 'aumentado') return `${base}+`;
+  if (triad === 'diminuto') return `${base.toLowerCase()}ø`;      // meio-diminuto
+  if (triad === 'diminuto7') return `${base.toLowerCase()}°`;     // diminuto
+  return base.toLowerCase();                                           // menor
+}
 
 // Standard guitar tuning (string 6 to string 1) - MIDI note numbers
 const STANDARD_TUNING = [
@@ -22,17 +103,6 @@ const STANDARD_TUNING = [
   { string: 1, note: 'E', octave: 4, midi: 64 },
 ];
 
-// Chord quality for each scale degree (1-indexed)
-const DEGREE_QUALITIES = {
-  1: { symbol: 'maj7', roman: 'I',     name: 'Maior com sétima maior' },
-  2: { symbol: 'm7',   roman: 'ii',    name: 'Menor com sétima menor' },
-  3: { symbol: 'm7',   roman: 'iii',   name: 'Menor com sétima menor' },
-  4: { symbol: 'maj7', roman: 'IV',    name: 'Maior com sétima maior' },
-  5: { symbol: '7',    roman: 'V',     name: 'Dominante (sétima menor)' },
-  6: { symbol: 'm7',   roman: 'vi',    name: 'Menor com sétima menor' },
-  7: { symbol: 'm7(b5)', roman: 'vii\u00F8', name: 'Meio-diminuto' },
-};
-
 // Degree names in Portuguese
 const DEGREE_NAMES_PT = {
   1: 'T\u00F4nica',
@@ -43,6 +113,84 @@ const DEGREE_NAMES_PT = {
   6: 'Superdominante',
   7: 'Sens\u00EDvel',
 };
+
+// ------------------------------------------------------------
+// Variações de voicing da mesma tétrade
+// ------------------------------------------------------------
+// Duas dimensões que o violonista de fato usa: em qual corda cai o baixo (a
+// região do braço) e qual grau está no baixo (a inversão).
+//
+// A tabela é enumerada, não calculada, e isso é deliberado. Uma fórmula que
+// combinasse os dois eixos livremente produziria formas indigitáveis — drop-2 com
+// a terça no baixo em cordas adjacentes põe 7 e 1 vizinhos, e como 7->1 é um
+// semitom enquanto subir uma corda soma 5, o traste cai 4 obrigatoriamente. Aqui
+// a lista É o conjunto verificado: não existe combinação inválida a alcançar.
+//
+// Cada entrada saiu de força bruta sobre 5 conjuntos de cordas x 24 ordens de voz
+// x 4032 combinações de campo/tônica/grau, exigindo: tocável, alturas ascendentes
+// do baixo ao agudo, e salto de traste para trás nunca abaixo de -2 entre cordas
+// fisicamente vizinhas e ambas tocadas (corda pulada não conta — o vão é o que
+// caracteriza drop-3 e não atrapalha a mão).
+const VOICING_VARIATIONS = {
+  6: {
+    1: { strings: [6, 4, 3, 2], order: [1, 7, 3, 5], family: 'drop-3' },
+    3: { strings: [6, 4, 3, 2], order: [3, 1, 5, 7], family: 'drop-3' },
+    5: { strings: [6, 5, 4, 3], order: [5, 1, 3, 7], family: 'drop-2' },
+    7: { strings: [6, 4, 3, 2], order: [7, 5, 1, 3], family: 'drop-3' },
+  },
+  5: {
+    1: { strings: [5, 4, 3, 2], order: [1, 5, 7, 3], family: 'drop-2' },
+    3: { strings: [5, 3, 2, 1], order: [3, 1, 5, 7], family: 'drop-3' },
+    5: { strings: [5, 4, 3, 2], order: [5, 1, 3, 7], family: 'drop-2' },
+    7: { strings: [5, 3, 2, 1], order: [7, 5, 1, 3], family: 'drop-3' },
+  },
+  4: {
+    1: { strings: [4, 3, 2, 1], order: [1, 5, 7, 3], family: 'drop-2' },
+    // Terça no baixo com o voicing todo nas quatro cordas agudas não tem forma
+    // digitável: a melhor disponível salta -3. Ausente de propósito.
+    5: { strings: [4, 3, 2, 1], order: [5, 1, 3, 7], family: 'drop-2' },
+    7: { strings: [4, 3, 2, 1], order: [7, 3, 5, 1], family: 'drop-2' },
+  },
+};
+
+export function getBassStringOptions() {
+  return [
+    { value: 6, label: '6ª' },
+    { value: 5, label: '5ª' },
+    { value: 4, label: '4ª' },
+  ];
+}
+
+export function getBassToneOptions() {
+  return [
+    { value: 1, label: 'Tônica', hint: 'fundamental' },
+    { value: 3, label: 'Terça', hint: '1ª inversão' },
+    { value: 5, label: 'Quinta', hint: '2ª inversão' },
+    { value: 7, label: 'Sétima', hint: '3ª inversão' },
+  ];
+}
+
+/** Existe variação para esta combinação? Nem toda existe, e isso é honesto. */
+export function hasVoicingVariation(bassString, bassTone) {
+  return Boolean(VOICING_VARIATIONS[bassString]?.[bassTone]);
+}
+
+/** A família (drop-2 / drop-3) da variação ativa, para exibir ao estudante. */
+export function getVoicingFamily(bassString, bassTone) {
+  return VOICING_VARIATIONS[bassString]?.[bassTone]?.family || '';
+}
+
+/**
+ * Monta a configuração de vozes da variação escolhida.
+ * @param {number} bassString - 6, 5 ou 4: onde cai a voz mais grave
+ * @param {number} bassTone - 1, 3, 5 ou 7: qual grau está no baixo
+ */
+export function buildVoicingConfig(bassString, bassTone) {
+  const v = VOICING_VARIATIONS[bassString]?.[bassTone]
+    || VOICING_VARIATIONS[bassString]?.[1]
+    || VOICING_VARIATIONS[6][1];
+  return v.order.map((chordTone, i) => ({ string: v.strings[i], chordTone }));
+}
 
 // Chord tone labels
 const CHORD_TONE_LABELS = {
@@ -59,7 +207,11 @@ export function noteToIndex(note) {
 }
 
 export function usesFlats(key) {
-  return FLAT_KEYS.includes(key);
+  const { tonic, scale } = normalizeTonality(key);
+  // A armadura de um campo menor é a do seu relativo maior: Ré menor grafa como
+  // Fá maior (bemóis), Lá menor como Dó maior (sem acidente).
+  if (scale === 'major') return FLAT_KEYS.includes(tonic);
+  return FLAT_MINOR_TONICS.includes(tonic);
 }
 
 export function indexToNote(index, key) {
@@ -70,16 +222,22 @@ export function indexToNote(index, key) {
   return CHROMATIC_SHARPS[normalized];
 }
 
-export function getMajorScale(root) {
-  const rootIdx = noteToIndex(root);
+export function getScaleNotes(key) {
+  const { tonic } = normalizeTonality(key);
+  const rootIdx = noteToIndex(tonic);
   if (rootIdx === -1) return [];
-  return MAJOR_SCALE_INTERVALS.map(interval => indexToNote(rootIdx + interval, root));
+  return getScaleIntervals(key).map(interval => indexToNote(rootIdx + interval, key));
+}
+
+/** Mantido para quem só quer a escala maior de uma tônica. */
+export function getMajorScale(root) {
+  return MAJOR_SCALE_INTERVALS.map(i => indexToNote(noteToIndex(root) + i, root));
 }
 
 export function getScaleDegreeNote(key, degree) {
-  const scale = getMajorScale(key);
+  const notes = getScaleNotes(key);
   const normalizedDegree = ((degree - 1) % 7 + 7) % 7;
-  return scale[normalizedDegree];
+  return notes[normalizedDegree];
 }
 
 export function getActualScaleDegree(currentDegree, chordTone) {
@@ -126,10 +284,16 @@ export function analyzeChordQuality(key, degree) {
   const i5 = getInterval(root, fifth);
   const i7 = getInterval(root, seventh);
 
+  const norm = ((degree - 1) % 7 + 7) % 7 + 1;
+  const tetrad = TETRAD_BY_INTERVALS[`${i3},${i5},${i7}`]
+    || { symbol: '?', triad: 'menor', name: 'Tétrade fora do cat\u00E1logo' };
+
   return {
     root, third, fifth, seventh,
     intervals: { third: i3, fifth: i5, seventh: i7 },
-    ...DEGREE_QUALITIES[degree],
+    symbol: tetrad.symbol,
+    name: tetrad.name,
+    roman: buildRoman(norm, tetrad.triad),
   };
 }
 
@@ -271,7 +435,7 @@ const STRICT_3NPS_MAP_5 = [5,5,5, 4,4,4, 3,3,3, 2,2,2, 1,1,1];
  * @returns {Array<{ stepIndex: number, string: number, fret: number, note: string, degree: number, modeDegree: number, chordTone: number, midi: number }>}
  */
 export function getTwoOctaveScale(key, degree = 1, voicing = []) {
-  const parentIntervals = [0, 2, 4, 5, 7, 9, 11];
+  const parentIntervals = getScaleIntervals(key);
 
   const parentRootNote = getScaleDegreeNote(key, 1);
   const parentRootIdx = noteToIndex(parentRootNote);
@@ -415,18 +579,10 @@ export function getArpeggioNotes(key, degree = 1, voicing = []) {
     }));
 }
 
-const GREEK_MODES = {
-  1: 'Modo J\u00F4nico (Maior)',
-  2: 'Modo D\u00F3rico',
-  3: 'Modo Fr\u00EDgio',
-  4: 'Modo L\u00EDdio',
-  5: 'Modo Mixol\u00EDdio',
-  6: 'Modo E\u00F3lio (Menor)',
-  7: 'Modo L\u00F3crio',
-};
-
-export function getModeName(degree) {
-  return GREEK_MODES[degree] || '';
+export function getModeName(degree, key = 'C') {
+  const { scale } = normalizeTonality(key);
+  const norm = ((degree - 1) % 7 + 7) % 7;
+  return SCALES[scale].modes[norm] || '';
 }
 
 export function getAllKeys() {
@@ -440,17 +596,12 @@ export function getStringInfo() {
   }));
 }
 
-export function getDegreeName(degree) {
-  return DEGREE_NAMES_PT[degree] || '';
-}
-
-export function getChordToneOptions() {
-  return [
-    { value: 1, label: 'T\u00F4nica (1)' },
-    { value: 3, label: 'Ter\u00E7a (3)' },
-    { value: 5, label: 'Quinta (5)' },
-    { value: 7, label: 'S\u00E9tima (7)' },
-  ];
+export function getDegreeName(degree, key = 'C') {
+  const norm = ((degree - 1) % 7 + 7) % 7 + 1;
+  // Só é "Sensível" quando dista um semitom da tônica. No menor natural a 7ª é
+  // um tom abaixo, e o nome correto passa a ser "Subtônica".
+  if (norm === 7) return getScaleIntervals(key)[6] === 11 ? 'Sens\u00EDvel' : 'Subt\u00F4nica';
+  return DEGREE_NAMES_PT[norm] || '';
 }
 
 export function getDiatonicChords(key) {
@@ -458,9 +609,9 @@ export function getDiatonicChords(key) {
     const degree = i + 1;
     return {
       degree,
-      degreeName: DEGREE_NAMES_PT[degree],
+      degreeName: getDegreeName(degree, key),
       chordName: getChordName(key, degree),
-      quality: DEGREE_QUALITIES[degree],
+      quality: analyzeChordQuality(key, degree),
       root: getScaleDegreeNote(key, degree),
     };
   });

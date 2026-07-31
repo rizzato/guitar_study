@@ -6,31 +6,28 @@
 .app-container {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 24px 32px;
+  padding: 16px 32px;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
 }
 
-/* Header */
+/* Header — uma linha só: marca à esquerda, modo à direita */
 header {
-  text-align: center;
-  padding: 32px 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 4px 0 16px;
 }
 
 header h1 {
-  font-size: 2.8rem;
+  font-size: 1.15rem;
   font-weight: 600;
-  letter-spacing: -0.02em;
-  color: var(--text-primary);
-  margin-bottom: 6px;
-}
-
-header p {
+  letter-spacing: -0.01em;
   color: var(--text-secondary);
-  font-size: 1.05rem;
-  font-weight: 300;
-  letter-spacing: 0.02em;
+  margin: 0;
 }
 
 /* Footer */
@@ -47,173 +44,305 @@ footer kbd {
 }
 
 /* ============================================================
-   Exercise Setup Panel
+   FAB de tonalidade — substituiu a tela de configuração
    ============================================================ */
 
-.setup-panel {
-  max-width: 640px;
-  margin: 16px auto;
+/* FAB circular padrão: 56px, alvo bem acima dos 44 mínimos, conteúdo curto.
+   Tentativas anteriores puseram o nome do campo ("Menor harmônica") dentro dele
+   e o disco virou elipse com texto cortado. A forma do menor vive no mostrador
+   central do círculo, e as cifras do campo já a denunciam para quem lê teoria. */
+.tonality-fab {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 40;
   display: flex;
-  flex-direction: column;
-  gap: 28px;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  color: #fff;
+  box-shadow: var(--lift-md);
+  transition: background 120ms ease, transform 120ms ease, opacity 140ms ease;
 }
 
-.setup-title {
-  font-size: 1.5rem;
-  font-weight: 700;
+.tonality-fab:hover { background: var(--accent-hover); }
+
+/* Feedback de toque sem deslocar layout. */
+.tonality-fab:active { transform: scale(0.94); }
+
+.tonality-fab:focus-visible {
+  outline: 2px solid var(--accent-hover);
+  outline-offset: 3px;
+}
+
+.fab-tonic {
+  font-family: var(--font-measure);
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.tonality-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(6, 6, 15, 0.72);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: overlayIn 200ms ease-out;
+}
+
+.tonality-overlay.saindo {
+  animation: overlayIn 170ms ease-in reverse;
+}
+
+@keyframes overlayIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* O painel nasce do FAB: mesma posição, mesmo tamanho, mesmo raio. É a regra
+   modal-motion — a sobreposição anima a partir da origem que a disparou, senão
+   ela aparece do nada e o estudante perde a relação de causa. As variáveis são
+   medidas em JS porque a distância depende de onde o painel centralizou. */
+.tonality-panel {
+  width: 100%;
+  max-width: 480px;
+  padding: 20px;
+  border-radius: 16px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+
+  --morph-x: 0px;
+  --morph-y: 0px;
+  --morph-scale: 0.12;
+  animation: morphIn 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.tonality-panel.saindo {
+  animation: morphIn 170ms cubic-bezier(0.4, 0, 1, 1) reverse;
+}
+
+/* Só transform e opacity animam de fato o layout; o raio é uma propriedade
+   barata num elemento só e é o que vende a ideia de "o botão virou o círculo". */
+@keyframes morphIn {
+  from {
+    transform: translate(var(--morph-x), var(--morph-y)) scale(var(--morph-scale));
+    border-radius: 50%;
+    opacity: 0;
+  }
+  55% { opacity: 1; }
+  to {
+    transform: none;
+    border-radius: 16px;
+    opacity: 1;
+  }
+}
+
+/* Enquanto o painel existe o botão some: ele "virou" o círculo, e mantê-lo
+   visível por baixo quebraria a ilusão. Fecha com Esc ou clique fora. */
+.tonality-fab.open {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ============================================================
+   Círculo de quintas — vive na sobreposição do FAB de tonalidade
+   ============================================================ */
+
+.circle-focusable {
+  line-height: 0;
+  border-radius: 50%;
+  display: block;
+}
+
+/* Sem outline: ele seguiria a caixa quadrada e apareceria como retângulo em volta
+   do círculo. O foco é a circunferência .circle-focus-ring, desenhada dentro. */
+.circle-focusable:focus,
+.circle-focusable:focus-visible {
+  outline: none;
+}
+
+/* Sem max-width: o círculo ocupa a largura que o painel oferece. É o herói da
+   tela, e o gargalo de tamanho é o painel, não ele. */
+.circle-fifths {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.circle-focus-ring {
+  fill: none;
+  stroke: var(--accent-primary);
+  stroke-width: 2;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 90ms ease;
+}
+
+/* Acende com foco, seja por clique ou por teclado. */
+.circle-focusable:focus .circle-focus-ring {
+  opacity: 1;
+}
+
+.circle-sector {
+  fill: rgba(255, 255, 255, 0.05);
+  stroke: none;
+  outline: none;
+  cursor: pointer;
+  transition: fill 90ms ease;
+}
+
+.circle-sector.inner { fill: rgba(255, 255, 255, 0.03); }
+.circle-sector.form  { fill: rgba(255, 255, 255, 0.02); }
+
+.circle-sector:hover { fill: rgba(255, 255, 255, 0.11); }
+
+.circle-sector.on {
+  fill: var(--accent-primary);
+}
+
+/* Sem uma menor ativa, o anel de forma recua: continua clicável e leva à relativa
+   menor, mas não disputa atenção com a escolha de tônica. */
+.form-ring-idle { opacity: 0.45; }
+
+.circle-label {
+  font-family: var(--font-measure);
+  text-anchor: middle;
+  dominant-baseline: middle;
+  pointer-events: none;
+  fill: var(--text-secondary);
+}
+
+.circle-label.major { font-size: 19px; font-weight: 600; }
+.circle-label.minor { font-size: 15px; font-weight: 500; fill: var(--text-muted); }
+.circle-label.form  { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; fill: var(--text-muted); }
+.circle-label.on    { fill: #fff; }
+
+.circle-center-tonic {
+  font-family: var(--font-measure);
+  font-size: 40px;
+  font-weight: 600;
+  text-anchor: middle;
+  fill: var(--text-primary);
+  pointer-events: none;
+}
+
+.circle-center-scale {
+  font-size: 11px;
+  text-anchor: middle;
+  fill: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  pointer-events: none;
+}
+
+/* ============================================================
+   Barra de voicing — vive na tela de exercício, acima do braço
+   ============================================================ */
+
+.voicing-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 28px;
+  align-items: center;
+  padding-top: 14px;
+  border-top: 1px solid var(--glass-border);
+}
+
+.voicing-field {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.setup-icon {
-  font-size: 1.8rem;
-  color: var(--accent-primary);
-}
-
-.setup-section {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.setup-label {
-  font-size: 0.85rem;
+.voicing-label {
+  font-size: 0.7rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--text-secondary);
+  white-space: nowrap;
 }
 
-/* Key selector — 6 colunas divide as 12 tonalidades em 2 linhas exatas.
-   Em flex-wrap o "B" sobrava sozinho numa terceira linha. */
-.key-selector {
-  display: grid;
-  grid-template-columns: repeat(6, minmax(48px, 1fr));
-  gap: 8px;
-  max-width: 400px;
+.chip-row {
+  display: flex;
+  gap: 4px;
 }
 
-.key-btn {
-  width: 100%;
-  height: 42px;
-  border-radius: 10px;
-  font-weight: 600;
+/* 44px de alvo: a cena "violão na mão" exige dedo ocupado e impreciso. */
+.voicing-chip {
+  min-width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  font-family: var(--font-measure);
   font-size: 0.95rem;
-  background: rgba(255, 255, 255, 0.04);
-  color: var(--text-secondary);
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--glass-border);
+  color: var(--text-secondary);
+  transition: background 90ms ease, color 90ms ease;
 }
 
-.key-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
+.voicing-chip:hover {
+  background: rgba(255, 255, 255, 0.11);
   color: var(--text-primary);
-  border-color: rgba(255, 255, 255, 0.2);
 }
 
-.key-btn.active {
+.voicing-chip.on {
   background: var(--accent-primary);
-  color: white;
   border-color: transparent;
+  color: #fff;
 }
 
-/* String configuration */
-.string-config {
+/* Com um controle só, cabe nomear a inversão dentro do próprio chip. */
+.voicing-chip.wide {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-}
-
-.string-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 8px 12px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid transparent;
-  transition: all 0.25s ease;
-}
-
-.string-row.active {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: var(--glass-border);
-}
-
-.string-toggle {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 14px;
-  border-radius: 8px;
-  font-weight: 500;
-  min-width: 120px;
-}
-
-.string-toggle.on {
-  background: rgba(99, 102, 241, 0.15);
-  color: var(--accent-hover);
-  border: 1px solid rgba(99, 102, 241, 0.3);
-}
-
-.string-toggle.off {
-  background: rgba(255, 255, 255, 0.04);
-  color: var(--text-muted);
-  border: 1px solid var(--glass-border);
-}
-
-.string-toggle:hover {
-  background: rgba(99, 102, 241, 0.2);
-  color: var(--text-primary);
-}
-
-.string-number {
-  font-size: 1.1rem;
-  font-weight: 700;
-  min-width: 20px;
-}
-
-.string-note {
-  font-size: 0.85rem;
-  opacity: 0.7;
-}
-
-.chord-tone-select {
-  flex: 1;
-  max-width: 200px;
-}
-
-/* Start button */
-.start-btn {
-  display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  padding: 14px 32px;
-  font-size: 1.1rem;
-  font-weight: 700;
-  border-radius: 12px;
-  background: var(--accent-primary);
-  color: white;
-  margin-top: 8px;
+  gap: 1px;
+  min-width: 86px;
+  padding: 0 10px;
 }
 
-.start-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-}
+.chip-tone { font-size: 1rem; font-weight: 600; }
 
-.start-btn:disabled {
-  opacity: 0.4;
+.voicing-chip:disabled {
+  opacity: 0.3;
   cursor: not-allowed;
 }
 
-.start-arrow {
-  font-size: 1.3rem;
-  transition: transform 0.2s;
+.voicing-chip:disabled:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-secondary);
 }
 
-.start-btn:hover .start-arrow {
-  transform: translateX(4px);
+/* Sem margin-left:auto — no canto inferior direito ele ficava debaixo do FAB
+   fixo, aparecendo cortado. Agora acompanha o grupo que descreve. */
+.voicing-family {
+  font-family: var(--font-measure);
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.chip-hint {
+  font-family: var(--font-ui);
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  opacity: 0.75;
 }
 
 /* ============================================================
@@ -224,31 +353,8 @@ footer kbd {
   display: flex;
   flex-direction: column;
   gap: 24px;
-}
-
-.back-btn {
-  align-self: flex-start;
-  background: transparent;
-  color: var(--text-secondary);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  padding: 8px 18px;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  font-weight: 500;
-}
-
-.back-btn:hover {
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--text-primary);
-  border-color: rgba(255, 255, 255, 0.2);
-}
-
-.top-control-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 16px;
+  /* espaço para o FAB não cobrir o último bloco */
+  padding-bottom: 96px;
 }
 
 .mode-toggle-group {
@@ -300,7 +406,7 @@ footer kbd {
 }
 
 .chord-name {
-  font-size: 3.2rem;
+  font-size: 3.8rem;
   font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--text-primary);
@@ -744,98 +850,14 @@ footer kbd {
 }
 
 /* ============================================================
-   Navigation
+   Barra de controles — grau e voicing num bloco só, acima do braço
    ============================================================ */
 
-.navigation {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-}
-
-.nav-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 22px;
-  border-radius: 12px;
-  font-weight: 600;
-  font-size: 0.95rem;
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--text-primary);
-  border: 1px solid var(--glass-border);
-}
-
-.nav-btn:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.2);
-}
-
-.nav-btn svg {
-  width: 18px;
-  height: 18px;
-}
-
-.nav-prev:hover svg { transform: translateX(-3px); }
-.nav-next:hover svg { transform: translateX(3px); }
-.nav-btn svg { transition: transform 0.2s ease; }
-
-.nav-center {
+.control-bar {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 10px;
-}
-
-.nav-degree-indicator {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 1.15rem;
-}
-
-.nav-roman {
-  font-weight: 700;
-  color: var(--accent-hover);
-  font-size: 1.3rem;
-}
-
-.nav-divider {
-  color: var(--text-muted);
-}
-
-.nav-key {
-  color: var(--text-secondary);
-  font-weight: 400;
-}
-
-.nav-progress {
-  display: flex;
-  gap: 8px;
-}
-
-.progress-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  transition: all 0.3s ease;
-}
-
-.progress-dot.active {
-  background: var(--accent-primary);
-  border-color: var(--accent-primary);
-  transform: scale(1.3);
-}
-
-/* ============================================================
-   Diatonic Chord Bar
-   ============================================================ */
-
-.diatonic-bar {
-  padding: 20px 24px;
+  gap: 14px;
+  padding: 16px 20px;
   border-radius: 16px;
   background: var(--glass-bg);
   backdrop-filter: blur(16px);
@@ -844,19 +866,57 @@ footer kbd {
   box-shadow: var(--glass-shadow);
 }
 
-.diatonic-bar h3 {
-  font-size: 0.8rem;
+.control-label {
+  font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--text-muted);
-  margin-bottom: 14px;
   font-weight: 600;
+}
+
+.degree-row {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+}
+
+/* O acorde ativo é o herói: as setas o ladeiam, altas o bastante para serem
+   alvo confortável na cena "violão na mão", e discretas o bastante para não
+   competirem com ele. */
+.degree-nav {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+}
+
+.degree-nav-panel {
+  flex: 1;
+  min-width: 0;
+}
+
+.degree-arrow {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 52px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--glass-border);
+  color: var(--text-secondary);
+}
+
+.degree-arrow:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: var(--text-primary);
 }
 
 .diatonic-chords {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+  flex: 1;
 }
 
 .diatonic-chip {
@@ -963,12 +1023,6 @@ footer kbd {
     padding: 16px;
   }
 
-  /* 4 colunas mantém as 12 tonalidades em linhas exatas (3), sem órfã. */
-  .key-selector {
-    grid-template-columns: repeat(4, 1fr);
-    max-width: none;
-  }
-
   header h1 {
     font-size: 2rem;
   }
@@ -981,11 +1035,4 @@ footer kbd {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .nav-btn span {
-    display: none;
-  }
-
-  .nav-btn {
-    padding: 12px 14px;
-  }
 }
