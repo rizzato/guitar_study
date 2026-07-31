@@ -3,12 +3,30 @@
 // ============================================================
 
 let audioCtx = null;
+let masterCompressor = null;
+let masterGain = null;
 
 function getAudioContext() {
   if (!audioCtx) {
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
     if (AudioContextClass) {
       audioCtx = new AudioContextClass();
+
+      // Create a dynamics compressor to glue the parallel sound waves and prevent digital clipping
+      masterCompressor = audioCtx.createDynamicsCompressor();
+      masterCompressor.threshold.setValueAtTime(-16, audioCtx.currentTime); // Squeeze peaks exceeding -16dB
+      masterCompressor.knee.setValueAtTime(8, audioCtx.currentTime);
+      masterCompressor.ratio.setValueAtTime(4, audioCtx.currentTime); // 4:1 compression ratio
+      masterCompressor.attack.setValueAtTime(0.005, audioCtx.currentTime); // Fast 5ms attack
+      masterCompressor.release.setValueAtTime(0.12, audioCtx.currentTime); // 120ms release
+
+      // Master output gain limiter
+      masterGain = audioCtx.createGain();
+      masterGain.gain.setValueAtTime(0.85, audioCtx.currentTime);
+
+      // Connect signal path: compressor -> master gain -> speakers
+      masterCompressor.connect(masterGain);
+      masterGain.connect(audioCtx.destination);
     }
   }
   if (audioCtx && audioCtx.state === 'suspended') {
@@ -18,12 +36,12 @@ function getAudioContext() {
 }
 
 const STRING_BASE_MIDI = {
-  6: 40, // E2
+  6: 40, // E2 (82.4Hz)
   5: 45, // A2
   4: 50, // D3
   3: 55, // G3
   2: 59, // B3
-  1: 64, // E4
+  1: 64, // E4 (329.6Hz)
 };
 
 /**
@@ -43,7 +61,7 @@ export function midiToFreq(midi) {
 }
 
 /**
- * Play a single guitar note with realistic pluck acoustics
+ * Play a single guitar note with realistic pluck acoustics and equalization
  */
 export function playNote(stringNum, fretNum, startTimeOffset = 0, duration = 2.0) {
   const ctx = getAudioContext();
@@ -53,9 +71,14 @@ export function playNote(stringNum, fretNum, startTimeOffset = 0, duration = 2.0
   const freq = midiToFreq(midi);
   const startTime = ctx.currentTime + startTimeOffset;
 
+  // Fletcher-Munson equal-loudness pitch compensation factor:
+  // Lower strings (6 and 5) get boosted to compensate for the human ear's lower bass sensitivity
+  const loudnessFactor = 1.0 + (6 - stringNum) * 0.12; // 6th string gets ~1.6x factor, 1st gets 1.0x
+  const basePeakVolume = 0.24 * loudnessFactor; // Prevents individual node over-saturation
+
   // Master note gain
   const noteGain = ctx.createGain();
-  
+
   // Low-pass filter for guitar string brightness decay
   const filter = ctx.createBiquadFilter();
   filter.type = 'lowpass';
@@ -78,12 +101,12 @@ export function playNote(stringNum, fretNum, startTimeOffset = 0, duration = 2.0
   osc3.frequency.setValueAtTime(freq, startTime);
 
   const osc3Gain = ctx.createGain();
-  osc3Gain.gain.setValueAtTime(0.15, startTime);
-  osc3Gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.15); // Quick pluck transient
+  osc3Gain.gain.setValueAtTime(0.12, startTime);
+  osc3Gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.12); // Quick pluck transient
 
   // Gain envelope for main vibration decay
   noteGain.gain.setValueAtTime(0.0001, startTime);
-  noteGain.gain.linearRampToValueAtTime(0.35, startTime + 0.008); // Fast attack
+  noteGain.gain.linearRampToValueAtTime(basePeakVolume, startTime + 0.008); // Fast attack
   noteGain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration); // Natural string decay
 
   // Connect routing
@@ -93,7 +116,8 @@ export function playNote(stringNum, fretNum, startTimeOffset = 0, duration = 2.0
   osc3Gain.connect(noteGain);
 
   noteGain.connect(filter);
-  filter.connect(ctx.destination);
+  // Route to our shared master compressor instead of directly to speakers
+  filter.connect(masterCompressor);
 
   // Start & Stop
   osc1.start(startTime);
@@ -107,7 +131,7 @@ export function playNote(stringNum, fretNum, startTimeOffset = 0, duration = 2.0
 
 /**
  * Play a complete chord with natural guitar strumming (down-strum delay)
- * 
+ *
  * @param {Array<{string: number, fret: number}>} voices - Array of chord voices
  * @param {number} strumSpeedMs - Delay between string plucks in ms (default 35ms)
  */
@@ -169,4 +193,3 @@ export function playScaleSequence(scaleNotes = [], onStepActive, onComplete, ste
   playCurrentStep();
   currentScaleTimer = setInterval(playCurrentStep, stepIntervalMs);
 }
-
