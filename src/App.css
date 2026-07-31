@@ -1087,3 +1087,499 @@ footer kbd {
   }
 
 }
+
+/* ============================================================
+   Stacked Harmonic Fields Redesign
+   ============================================================ */
+
+.harmonic-stack-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  border-radius: 16px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  margin-bottom: 24px;
+}
+
+.stack-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 12px;
+  margin-bottom: 8px;
+}
+
+.stack-header h2 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.add-stack-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--accent-primary);
+  color: white;
+  border: none;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 8px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.add-stack-btn:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+}
+
+.add-stack-btn:active {
+  transform: scale(0.97);
+}
+
+.harmonic-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.stack-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.01);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.stack-row:hover {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.stack-row.active {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(99, 102, 241, 0.25);
+  cursor: default;
+}
+
+.stack-row-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.stack-row-title {
+  font-family: var(--font-measure);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.stack-row.active .stack-row-title {
+  color: var(--accent-hover);
+  font-weight: 700;
+}
+
+.stack-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stack-row-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.stack-row-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
+
+.stack-row-btn.delete-btn:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #fca5a5;
+}
+
+.stack-row-body-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.row-nav-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 38px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--glass-border);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.row-nav-arrow:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
+
+.row-nav-arrow-placeholder {
+  width: 32px;
+  flex-shrink: 0;
+}
+
+/* Voicing Panel Customizer Container inside stack row */
+.stack-row-voicing-container {
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* ============================================================
+   Voicing Panel Customizer Tabs & Inputs
+   ============================================================ */
+
+.voicing-panel-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.voicing-mode-tabs {
+  display: inline-flex;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 4px;
+  border-radius: 8px;
+  align-self: flex-start;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.voicing-tab-btn {
+  background: transparent;
+  border: none;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.voicing-tab-btn:hover {
+  color: var(--text-primary);
+}
+
+.voicing-tab-btn.active {
+  background: var(--accent-primary);
+  color: white;
+}
+
+/* Custom Manual Intervals Grid */
+.manual-strings-grid {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.manual-string-col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-width: 90px;
+}
+
+.manual-string-label {
+  font-family: var(--font-measure);
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.manual-select-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.manual-select {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--glass-border);
+  color: var(--text-primary);
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  font-family: var(--font-measure);
+  font-weight: 500;
+  border-radius: 8px;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  transition: all 0.15s ease;
+}
+
+.manual-select:hover {
+  background: rgba(0, 0, 0, 0.6);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.manual-select:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.25);
+}
+
+/* Custom select chevron */
+.manual-select-wrapper::after {
+  content: "";
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid var(--text-secondary);
+  pointer-events: none;
+}
+
+/* ============================================================
+   Bottom Compact Presentation Panel
+   ============================================================ */
+
+.bottom-presentation-container {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.degree-nav-panel.compact .chord-info,
+.degree-nav-panel.compact .solfejo-info,
+.degree-nav-panel.compact .arpejo-info {
+  background: rgba(17, 17, 40, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: none;
+  padding: 16px 20px;
+}
+
+.degree-nav-panel.compact .chord-header {
+  margin-bottom: 12px;
+}
+
+.degree-nav-panel.compact .voices-grid {
+  gap: 12px;
+}
+
+.degree-nav-panel.compact .card-voice {
+  padding: 8px 12px;
+}
+
+.degree-nav-panel.compact .voice-string-label {
+  font-size: 0.65rem;
+}
+
+.degree-nav-panel.compact .voice-note-name {
+  font-size: 1.25rem;
+}
+
+.degree-nav-panel.compact .voice-fret-pos {
+  font-size: 0.75rem;
+}
+
+.degree-nav-panel.compact .voice-interval-label {
+  font-size: 0.6rem;
+}
+
+/* ============================================================
+   Two-Column Configuration Modal
+   ============================================================ */
+
+.modal-config-panel {
+  max-width: 960px !important; /* Overrides default 480px max-width to fit columns */
+  width: 90vw;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: modalEnter 260ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 12px;
+}
+
+.modal-header h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.close-modal-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  transition: all 0.15s ease;
+}
+
+.close-modal-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+}
+
+.modal-body-layout {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+.modal-voicing-section {
+  flex: 1.1;
+  min-width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.modal-key-section {
+  flex: 1;
+  min-width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.modal-voicing-section h4,
+.modal-key-section h4 {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent-hover);
+  font-weight: 700;
+  margin: 0 0 4px;
+}
+
+.stack-row-subtitle-voicing {
+  font-size: 0.75rem;
+  font-weight: normal;
+  color: var(--text-muted);
+  margin-left: 6px;
+}
+
+@keyframes modalEnter {
+  from {
+    transform: scale(0.96) translateY(12px);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 900px) {
+  .modal-body-layout {
+    flex-direction: column;
+    gap: 24px;
+  }
+}
+
+/* ============================================================
+   Minor Scale Form Selector Bar (Bottom Descriptive Panel)
+   ============================================================ */
+
+.minor-form-selector-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 20px;
+  background: rgba(99, 102, 241, 0.05);
+  border: 1px solid rgba(99, 102, 241, 0.15);
+  border-radius: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.selector-bar-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--accent-hover);
+}
+
+.minor-form-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.minor-form-btn {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 6px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.minor-form-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.minor-form-btn.active {
+  background: var(--accent-primary);
+  border-color: transparent;
+  color: white;
+  box-shadow: 0 2px 10px rgba(99, 102, 241, 0.3);
+}
+
+
+

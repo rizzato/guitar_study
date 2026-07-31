@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, createElement } from 'react';
 
 export const LANGUAGES = [
   { code: 'pt-BR', label: 'Português (BR)', flag: '🇧🇷', short: 'PT' },
@@ -591,16 +591,25 @@ export const translations = {
 
 const LanguageContext = createContext(null);
 
+export function detectLanguage() {
+  const saved = localStorage.getItem('app_lang');
+  if (saved && translations[saved]) return saved;
+
+  const browserLanguages = navigator.languages || [navigator.language || navigator.userLanguage || ''];
+  for (const langCode of browserLanguages) {
+    if (!langCode) continue;
+    const cleanLang = langCode.toLowerCase();
+    if (cleanLang.startsWith('pt')) return 'pt-BR';
+    if (cleanLang.startsWith('en')) return 'en';
+    if (cleanLang.startsWith('fr')) return 'fr';
+    if (cleanLang.startsWith('es')) return 'es';
+  }
+
+  return 'en';
+}
+
 export function LanguageProvider({ children }) {
-  const [lang, setLangState] = useState(() => {
-    const saved = localStorage.getItem('app_lang');
-    if (saved && translations[saved]) return saved;
-    const browserLang = navigator.language || navigator.userLanguage || '';
-    if (browserLang.startsWith('en')) return 'en';
-    if (browserLang.startsWith('fr')) return 'fr';
-    if (browserLang.startsWith('es')) return 'es';
-    return 'pt-BR';
-  });
+  const [lang, setLangState] = useState(detectLanguage);
 
   const setLanguage = (newLang) => {
     if (translations[newLang]) {
@@ -618,11 +627,7 @@ export function LanguageProvider({ children }) {
     return text;
   };
 
-  return (
-    <LanguageContext.Provider value={{ lang, setLanguage, t }}>
-      {children}
-    </LanguageContext.Provider>
-  );
+  return createElement(LanguageContext.Provider, { value: { lang, setLanguage, t } }, children);
 }
 
 export function useTranslation() {

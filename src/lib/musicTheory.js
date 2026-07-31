@@ -599,7 +599,7 @@ export function getArpeggioNotes(key, degree = 1, voicing = []) {
     }));
 }
 
-import { translations } from './i18n';
+import { translations } from './i18n.js';
 
 export function getModeName(degree, key = 'C', lang = 'pt-BR') {
   const dict = translations[lang] || translations['pt-BR'];

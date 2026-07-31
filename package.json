@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist",
-    "test": "node test/verify.mjs && node test/scales.mjs && node test/sequence.mjs"
+    "test": "node test/verify.mjs && node test/scales.mjs && node test/sequence.mjs && node test/i18n.mjs && node test/stack.mjs"
   },
   "dependencies": {
     "react": "^19.2.7",
