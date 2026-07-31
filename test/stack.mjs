@@ -58,3 +58,34 @@ const uniqueColors = new Set(Object.values(result2.colorMap));
 assert.equal(uniqueColors.size, 3, 'Acordes repetidos distintos devem ter cores distintas.');
 
 console.log('Testes de pilha de campos harmônicos (chord coloring) concluídos com sucesso!');
+
+// Test case 3: Voicing Preview Fret & Interval Calculation
+import { buildVoicing, buildVoicingConfig } from '../src/lib/musicTheory.js';
+
+const config = buildVoicingConfig(6, 1); // Bass on 6, inversion 1 (Drop-2 root position)
+const voicingResult = buildVoicing({ tonic: 'C', scale: 'major' }, 1, config);
+
+const played = voicingResult.voices.filter(v => v.fret !== null && v.fret > 0);
+assert.equal(played.length, 4, 'Drop-2 root position deve ter 4 vozes ativas.');
+
+const minFret = Math.min(...played.map(v => v.fret));
+assert.equal(minFret, 8, 'Em Dó maior grau 1, o menor traste do Drop-2 na 6ª corda deve ser o traste 8 (nota Dó).');
+
+// Verify relative frets relative to minFret (8)
+// Cmaj7: C on string 6 (fret 8, relative 0), B on string 4 (fret 9, relative 1), E on string 3 (fret 9, relative 1), G on string 2 (fret 8, relative 0)
+const voice6 = played.find(v => v.string === 6);
+const voice4 = played.find(v => v.string === 4);
+const voice3 = played.find(v => v.string === 3);
+const voice2 = played.find(v => v.string === 2);
+
+assert.equal(voice6.fret - minFret, 0, '6ª corda deve estar no traste relativo 0.');
+assert.equal(voice4.fret - minFret, 1, '4ª corda deve estar no traste relativo 1.');
+assert.equal(voice3.fret - minFret, 1, '3ª corda deve estar no traste relativo 1.');
+assert.equal(voice2.fret - minFret, 0, '2ª corda deve estar no traste relativo 0.');
+
+assert.equal(voice6.chordTone, 1, '6ª corda deve ser a tônica (1).');
+assert.equal(voice4.chordTone, 7, '4ª corda deve ser a sétima (7).');
+assert.equal(voice3.chordTone, 3, '3ª corda deve ser a terça (3).');
+assert.equal(voice2.chordTone, 5, '2ª corda deve ser a quinta (5).');
+
+console.log('Testes de desenho do acorde (Voicing Preview) concluídos com sucesso!');

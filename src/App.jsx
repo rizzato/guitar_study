@@ -4,6 +4,7 @@ import ChordInfo from './components/ChordInfo';
 import SolfejoInfo from './components/SolfejoInfo';
 import ArpejoInfo from './components/ArpejoInfo';
 import VoicingBar from './components/VoicingBar';
+import VoicingPreview from './components/VoicingPreview';
 import CircleOfFifths from './components/CircleOfFifths';
 import LanguageSelector from './components/LanguageSelector';
 import { useTranslation } from './lib/i18n';
@@ -538,6 +539,12 @@ function App() {
                   bassTone={modalVoicing.bassTone}
                   manualConfig={modalVoicing.manualConfig}
                   onChange={(updated) => setModalVoicing(prev => ({ ...prev, ...updated }))}
+                />
+                <VoicingPreview
+                  voicingMode={modalVoicing.voicingMode}
+                  bassString={modalVoicing.bassString}
+                  bassTone={modalVoicing.bassTone}
+                  manualConfig={modalVoicing.manualConfig}
                 />
               </div>
 
